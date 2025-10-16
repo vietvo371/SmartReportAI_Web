@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model NguoiDung {
+  id           Int      @id @default(autoincrement())
+  ho_ten       String
+  email        String   @unique
+  mat_khau     String
+  so_dien_thoai String?
+  vai_tro      String   // nguoi_dan, can_bo, quan_tri
+  dia_chi      String?
+  avatar_url   String?
+  phan_anhs    PhanAnh[]
+  thong_baos   ThongBao[]
+  tokens       Token[]
+  lich_su_danh_gias LichSuDanhGia[]
+  xu_lys       XuLy[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}
+
+model PhanAnh {
+  id                Int      @id @default(autoincrement())
+  nguoi_dung_id     Int
+  tieu_de           String
+  mo_ta             String?
+  loai_su_co        String
+  vi_do             Float
+  kinh_do           Float
+  hinh_anh_url      String?
+  muc_do_nghiem_trong Int
+  trang_thai        String   // cho_xu_ly, dang_xu_ly, da_hoan_tat
+  ai_nhan_dang      Json?
+  xu_lys            XuLy[]
+  blockchain_logs   BlockchainLog[]
+  lich_su_danh_gias LichSuDanhGia[]
+  nguoi_dung        NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+}
+
+model XuLy {
+  id              Int      @id @default(autoincrement())
+  phan_anh_id     Int
+  can_bo_id       Int
+  noi_dung        String?
+  trang_thai_moi  String
+  hinh_anh_minh_chung String?
+  thoi_gian       DateTime @default(now())
+  phan_anh        PhanAnh @relation(fields: [phan_anh_id], references: [id])
+  can_bo          NguoiDung @relation(fields: [can_bo_id], references: [id])
+}
+
+model BlockchainLog {
+  id              Int      @id @default(autoincrement())
+  phan_anh_id     Int
+  transaction_hash String
+  trang_thai_giao_dich String?
+  block_number    Int?
+  vi_dua          String?
+  hanh_dong       String
+  thoi_gian       DateTime @default(now())
+  phan_anh        PhanAnh @relation(fields: [phan_anh_id], references: [id])
+}
+
+model ThongBao {
+  id            Int      @id @default(autoincrement())
+  nguoi_dung_id Int
+  tieu_de       String
+  noi_dung      String
+  da_doc        Boolean  @default(false)
+  nguoi_dung    NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
+  created_at    DateTime @default(now())
+}
+
+model LichSuDanhGia {
+  id            Int      @id @default(autoincrement())
+  phan_anh_id   Int
+  nguoi_dung_id Int
+  diem          Int
+  nhan_xet      String?
+  phan_anh      PhanAnh @relation(fields: [phan_anh_id], references: [id])
+  nguoi_dung    NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
+  created_at    DateTime @default(now())
+}
+
+model Token {
+  id            Int      @id @default(autoincrement())
+  nguoi_dung_id Int
+  token         String
+  loai_token    String
+  het_han       DateTime
+  nguoi_dung    NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
+  created_at    DateTime @default(now())
+}
