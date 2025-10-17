@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type CitizenSidebarContextType = {
+type StaffSidebarContextType = {
   isExpanded: boolean;
   isMobileOpen: boolean;
   isHovered: boolean;
@@ -14,17 +14,17 @@ type CitizenSidebarContextType = {
   toggleSubmenu: (item: string) => void;
 };
 
-const CitizenSidebarContext = createContext<CitizenSidebarContextType | undefined>(undefined);
+const StaffSidebarContext = createContext<StaffSidebarContextType | undefined>(undefined);
 
-export const useCitizenSidebar = () => {
-  const context = useContext(CitizenSidebarContext);
+export const useStaffSidebar = () => {
+  const context = useContext(StaffSidebarContext);
   if (!context) {
-    throw new Error("useCitizenSidebar must be used within a CitizenSidebarProvider");
+    throw new Error("useStaffSidebar must be used within a StaffSidebarProvider");
   }
   return context;
 };
 
-export const CitizenSidebarProvider: React.FC<{ children: React.ReactNode }> = ({
+export const StaffSidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -64,7 +64,7 @@ export const CitizenSidebarProvider: React.FC<{ children: React.ReactNode }> = (
   };
 
   return (
-    <CitizenSidebarContext.Provider
+    <StaffSidebarContext.Provider
       value={{
         isExpanded: isMobile ? false : isExpanded,
         isMobileOpen,
@@ -79,6 +79,6 @@ export const CitizenSidebarProvider: React.FC<{ children: React.ReactNode }> = (
       }}
     >
       {children}
-    </CitizenSidebarContext.Provider>
+    </StaffSidebarContext.Provider>
   );
 };

@@ -23,7 +23,7 @@ export default function AuthLayout({
                 className="w-full h-full object-cover"
                 fill
                 priority
-                src="/images/logo/SmartReportAI/logoauth.svg"
+                src="/images/logo/logoauth.svg"
                 alt="Logo"
               />
             </div>

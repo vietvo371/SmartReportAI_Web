@@ -60,10 +60,10 @@ export default function SignInForm() {
       
       // Redirect based on role
       const role = data.user.vai_tro;
-      if (role === "admin") {
+      if (role === "quan_tri") {
         router.push("/admin/dashboard");
-      } else if (role === "tinh_nguyen_vien") {
-        router.push("/volunteer/dashboard");
+      } else if (role === "can_bo") {
+        router.push("/staff/dashboard");
       } else {
         router.push("/citizen/dashboard");
       }

@@ -37,8 +37,8 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
       
       if (!map.current) return;
 
-      // Add relief centers
-      map.current.addSource('relief-centers', {
+      // Add infrastructure issues
+      map.current.addSource('infrastructure-issues', {
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
@@ -46,8 +46,12 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             {
               type: 'Feature',
               properties: {
-                name: 'Trung tâm cứu trợ 1',
-                type: 'relief-center'
+                name: 'Ổ gà đường Nguyễn Huệ',
+                type: 'pothole',
+                priority: 'high',
+                status: 'pending',
+                reportedBy: 'Nguyễn Văn A',
+                reportedAt: '2025-01-15T08:30:00Z'
               },
               geometry: {
                 type: 'Point',
@@ -57,8 +61,12 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             {
               type: 'Feature',
               properties: {
-                name: 'Trung tâm cứu trợ 2',
-                type: 'relief-center'
+                name: 'Ngập lụt khu vực Cầu Giấy',
+                type: 'flooding',
+                priority: 'critical',
+                status: 'in-progress',
+                reportedBy: 'Trần Thị B',
+                reportedAt: '2025-01-15T09:15:00Z'
               },
               geometry: {
                 type: 'Point',
@@ -68,30 +76,27 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             {
               type: 'Feature',
               properties: {
-                name: 'Trung tâm cứu trợ 3',
-                type: 'relief-center'
+                name: 'Đèn giao thông hỏng',
+                type: 'traffic-light',
+                priority: 'medium',
+                status: 'resolved',
+                reportedBy: 'Lê Văn C',
+                reportedAt: '2025-01-14T16:45:00Z'
               },
               geometry: {
                 type: 'Point',
                 coordinates: [105.7342, 20.9278]
               }
-            }
-          ]
-        }
-      });
-
-      // Add emergency requests
-      map.current.addSource('emergency-requests', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: [
+            },
             {
               type: 'Feature',
               properties: {
-                name: 'Yêu cầu khẩn cấp 1',
-                type: 'emergency-request',
-                priority: 'high'
+                name: 'Rác thải tập trung',
+                type: 'waste',
+                priority: 'low',
+                status: 'pending',
+                reportedBy: 'Phạm Thị D',
+                reportedAt: '2025-01-15T10:20:00Z'
               },
               geometry: {
                 type: 'Point',
@@ -101,21 +106,35 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             {
               type: 'Feature',
               properties: {
-                name: 'Yêu cầu khẩn cấp 2',
-                type: 'emergency-request',
-                priority: 'high'
+                name: 'Kẹt xe tại ngã tư',
+                type: 'traffic-jam',
+                priority: 'high',
+                status: 'in-progress',
+                reportedBy: 'Hoàng Văn E',
+                reportedAt: '2025-01-15T07:30:00Z'
               },
               geometry: {
                 type: 'Point',
                 coordinates: [105.9042, 21.1078]
               }
-            },
+            }
+          ]
+        }
+      });
+
+      // Add processing teams
+      map.current.addSource('processing-teams', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
             {
               type: 'Feature',
               properties: {
-                name: 'Yêu cầu khẩn cấp 3',
-                type: 'emergency-request',
-                priority: 'medium'
+                name: 'Đội xử lý 1',
+                type: 'processing-team',
+                status: 'active',
+                currentTask: 'Xử lý ngập lụt Cầu Giấy'
               },
               geometry: {
                 type: 'Point',
@@ -125,9 +144,10 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             {
               type: 'Feature',
               properties: {
-                name: 'Yêu cầu khẩn cấp 4',
-                type: 'emergency-request',
-                priority: 'high'
+                name: 'Đội xử lý 2',
+                type: 'processing-team',
+                status: 'active',
+                currentTask: 'Sửa chữa đèn giao thông'
               },
               geometry: {
                 type: 'Point',
@@ -137,9 +157,10 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             {
               type: 'Feature',
               properties: {
-                name: 'Yêu cầu khẩn cấp 5',
-                type: 'emergency-request',
-                priority: 'medium'
+                name: 'Đội xử lý 3',
+                type: 'processing-team',
+                status: 'standby',
+                currentTask: 'Sẵn sàng xử lý'
               },
               geometry: {
                 type: 'Point',
@@ -150,83 +171,122 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
         }
       });
 
-      // Add relief centers layer
+      // Add infrastructure issues layer
       map.current.addLayer({
-        id: 'relief-centers',
+        id: 'infrastructure-issues',
         type: 'circle',
-        source: 'relief-centers',
+        source: 'infrastructure-issues',
         paint: {
-          'circle-radius': 12,
-          'circle-color': '#10B981',
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-opacity': 0.8
-        }
-      });
-
-      // Add emergency requests layer
-      map.current.addLayer({
-        id: 'emergency-requests',
-        type: 'circle',
-        source: 'emergency-requests',
-        paint: {
-          'circle-radius': 8,
-          'circle-color': '#EF4444',
+          'circle-radius': [
+            'case',
+            ['==', ['get', 'priority'], 'critical'], 14,
+            ['==', ['get', 'priority'], 'high'], 12,
+            ['==', ['get', 'priority'], 'medium'], 10,
+            8
+          ],
+          'circle-color': [
+            'case',
+            ['==', ['get', 'priority'], 'critical'], '#DC2626',
+            ['==', ['get', 'priority'], 'high'], '#EF4444',
+            ['==', ['get', 'priority'], 'medium'], '#F59E0B',
+            '#6B7280'
+          ],
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
           'circle-opacity': 0.9
         }
       });
 
-      // Add pulsing animation for relief centers
+      // Add processing teams layer
       map.current.addLayer({
-        id: 'relief-centers-pulse',
+        id: 'processing-teams',
         type: 'circle',
-        source: 'relief-centers',
+        source: 'processing-teams',
+        paint: {
+          'circle-radius': 10,
+          'circle-color': [
+            'case',
+            ['==', ['get', 'status'], 'active'], '#3a5ba0',
+            ['==', ['get', 'status'], 'standby'], '#10B981',
+            '#6B7280'
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+          'circle-opacity': 0.8
+        }
+      });
+
+      // Add pulsing animation for critical issues
+      map.current.addLayer({
+        id: 'critical-issues-pulse',
+        type: 'circle',
+        source: 'infrastructure-issues',
+        filter: ['==', ['get', 'priority'], 'critical'],
         paint: {
           'circle-radius': {
-            'base': 12,
-            'stops': [[0, 12], [20, 20]]
+            'base': 14,
+            'stops': [[0, 14], [20, 24]]
           },
-          'circle-color': '#10B981',
+          'circle-color': '#DC2626',
           'circle-opacity': 0.3
         }
       });
 
-      // Add pulsing animation for emergency requests
+      // Add pulsing animation for processing teams
       map.current.addLayer({
-        id: 'emergency-requests-pulse',
+        id: 'processing-teams-pulse',
         type: 'circle',
-        source: 'emergency-requests',
+        source: 'processing-teams',
         paint: {
           'circle-radius': {
-            'base': 8,
-            'stops': [[0, 8], [20, 16]]
+            'base': 10,
+            'stops': [[0, 10], [20, 18]]
           },
-          'circle-color': '#EF4444',
-          'circle-opacity': 0.3
+          'circle-color': '#3a5ba0',
+          'circle-opacity': 0.2
         }
       });
 
-      // Add popup on click
-      map.current.on('click', 'relief-centers', (e) => {
+      // Add popup on click for infrastructure issues
+      map.current.on('click', 'infrastructure-issues', (e) => {
         const coordinates = e.lngLat;
         const properties = e.features?.[0]?.properties;
         
         if (map.current) {
+          const priorityColors = {
+            'critical': '#DC2626',
+            'high': '#EF4444',
+            'medium': '#F59E0B',
+            'low': '#6B7280'
+          };
+          
+          const statusText = {
+            'pending': 'Chờ xử lý',
+            'in-progress': 'Đang xử lý',
+            'resolved': 'Đã giải quyết'
+          };
+          
           new mapboxgl.Popup()
             .setLngLat(coordinates)
             .setHTML(`
-              <div class="p-2">
-                <h3 class="font-semibold text-green-600">${properties?.name}</h3>
-                <p class="text-sm text-gray-600">Trung tâm cứu trợ</p>
+              <div class="p-3 min-w-[200px]">
+                <h3 class="font-semibold text-gray-800 mb-2">${properties?.name}</h3>
+                <div class="space-y-1 text-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full" style="background-color: ${priorityColors[properties?.priority]}"></span>
+                    <span class="text-gray-600">Ưu tiên: ${properties?.priority}</span>
+                  </div>
+                  <div class="text-gray-600">Trạng thái: ${statusText[properties?.status]}</div>
+                  <div class="text-gray-600">Báo cáo bởi: ${properties?.reportedBy}</div>
+                  <div class="text-gray-500 text-xs">${new Date(properties?.reportedAt).toLocaleString('vi-VN')}</div>
+                </div>
               </div>
             `)
             .addTo(map.current);
         }
       });
 
-      map.current.on('click', 'emergency-requests', (e) => {
+      map.current.on('click', 'processing-teams', (e) => {
         const coordinates = e.lngLat;
         const properties = e.features?.[0]?.properties;
         
@@ -234,9 +294,15 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
           new mapboxgl.Popup()
             .setLngLat(coordinates)
             .setHTML(`
-              <div class="p-2">
-                <h3 class="font-semibold text-red-600">${properties?.name}</h3>
-                <p class="text-sm text-gray-600">Yêu cầu khẩn cấp - ${properties?.priority === 'high' ? 'Ưu tiên cao' : 'Ưu tiên trung bình'}</p>
+              <div class="p-3 min-w-[200px]">
+                <h3 class="font-semibold text-blue-600 mb-2">${properties?.name}</h3>
+                <div class="space-y-1 text-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full ${properties?.status === 'active' ? 'bg-blue-500' : 'bg-green-500'}"></span>
+                    <span class="text-gray-600">Trạng thái: ${properties?.status === 'active' ? 'Đang hoạt động' : 'Sẵn sàng'}</span>
+                  </div>
+                  <div class="text-gray-600">Nhiệm vụ: ${properties?.currentTask}</div>
+                </div>
               </div>
             `)
             .addTo(map.current);
@@ -244,25 +310,25 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
       });
 
       // Change cursor on hover
-      map.current.on('mouseenter', 'relief-centers', () => {
+      map.current.on('mouseenter', 'infrastructure-issues', () => {
         if (map.current) {
           map.current.getCanvas().style.cursor = 'pointer';
         }
       });
 
-      map.current.on('mouseenter', 'emergency-requests', () => {
+      map.current.on('mouseenter', 'processing-teams', () => {
         if (map.current) {
           map.current.getCanvas().style.cursor = 'pointer';
         }
       });
 
-      map.current.on('mouseleave', 'relief-centers', () => {
+      map.current.on('mouseleave', 'infrastructure-issues', () => {
         if (map.current) {
           map.current.getCanvas().style.cursor = '';
         }
       });
 
-      map.current.on('mouseleave', 'emergency-requests', () => {
+      map.current.on('mouseleave', 'processing-teams', () => {
         if (map.current) {
           map.current.getCanvas().style.cursor = '';
         }
@@ -285,20 +351,28 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
         <>
           {/* Status Panel */}
           <div className="absolute top-4 left-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">3 Trung tâm cứu trợ</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">5 Yêu cầu khẩn cấp</span>
+            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Tình trạng hạ tầng</div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-xs text-gray-700 dark:text-gray-300">1 Khẩn cấp</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <span className="text-xs text-gray-700 dark:text-gray-300">2 Cao</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                <span className="text-xs text-gray-700 dark:text-gray-300">2 Đã xử lý</span>
+              </div>
             </div>
           </div>
 
           {/* Live Stats */}
           <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Đang xử lý</div>
-            <div className="text-lg font-bold text-green-600 dark:text-green-400">12/15</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Hiệu quả xử lý</div>
+            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">85%</div>
+            <div className="text-xs text-gray-500">Trung bình 2.3h</div>
           </div>
 
           {/* Map Legend */}
@@ -306,19 +380,26 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Chú thích</div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Trung tâm cứu trợ</span>
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Sự cố khẩn cấp</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Yêu cầu khẩn cấp</span>
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Ưu tiên cao</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Đội xử lý</span>
               </div>
             </div>
           </div>
 
-          {/* Live Update Badge */}
-          <div className="absolute bottom-4 right-4 bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-lg animate-pulse">
-            LIVE
+          {/* AI Processing Badge */}
+          <div className="absolute bottom-4 right-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-3 py-1 rounded-full shadow-lg">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              AI Đang phân tích
+            </div>
           </div>
         </>
       )}

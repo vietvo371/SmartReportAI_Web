@@ -3,13 +3,12 @@ import { persist } from "zustand/middleware";
 
 interface User {
   id: number;
-  ho_va_ten: string;
+  ho_ten: string;
   email: string;
   vai_tro: string;
   so_dien_thoai?: string | null;
-  hinh_anh?: string | null;
-  vi_do?: number | null;
-  kinh_do?: number | null;
+  dia_chi?: string | null;
+  avatar_url?: string | null;
 }
 
 interface AuthState {
@@ -37,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, token: null, isAuthenticated: false }),
     }),
     {
-      name: "relieflink-auth",
+      name: "smartreportai-auth",
     },
   ),
 );

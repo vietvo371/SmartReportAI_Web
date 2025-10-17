@@ -12,9 +12,10 @@ import { useToast } from "@/context/ToastContext";
 interface RegisterFormData {
   email: string;
   mat_khau: string;
-  ho_va_ten: string;
+  ho_ten: string;
   so_dien_thoai: string;
   vai_tro: string;
+  dia_chi?: string;
 }
 
 export default function SignUpForm() {
@@ -26,9 +27,10 @@ export default function SignUpForm() {
   const [formData, setFormData] = useState<RegisterFormData>({
     email: "",
     mat_khau: "",
-    ho_va_ten: "",
+    ho_ten: "",
     so_dien_thoai: "",
     vai_tro: "nguoi_dan",
+    dia_chi: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -71,10 +73,10 @@ export default function SignUpForm() {
       
       // Redirect based on role
       const role = data.user.vai_tro;
-      if (role === "admin") {
+      if (role === "quan_tri") {
         router.push("/admin/dashboard");
-      } else if (role === "tinh_nguyen_vien") {
-        router.push("/volunteer/dashboard");
+      } else if (role === "can_bo") {
+        router.push("/staff/dashboard");
       } else {
         router.push("/citizen/dashboard");
       }
@@ -166,8 +168,8 @@ export default function SignUpForm() {
                   </Label>
                   <Input
                     type="text"
-                    name="ho_va_ten"
-                    value={formData.ho_va_ten}
+                    name="ho_ten"
+                    value={formData.ho_ten}
                     onChange={handleInputChange}
                     placeholder="Enter your full name"
                     required
@@ -190,6 +192,19 @@ export default function SignUpForm() {
 
                 <div>
                   <Label>
+                    Address
+                  </Label>
+                  <Input
+                    type="text"
+                    name="dia_chi"
+                    value={formData.dia_chi}
+                    onChange={handleInputChange}
+                    placeholder="Enter your address (optional)"
+                  />
+                </div>
+
+                <div>
+                  <Label>
                     Role<span className="text-error-500">*</span>
                   </Label>
                   <select
@@ -198,9 +213,9 @@ export default function SignUpForm() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   >
-                    <option value="nguoi_dan">Citizen</option>
-                    <option value="tinh_nguyen_vien">Volunteer</option>
-                    <option value="admin">Admin</option>
+                    <option value="nguoi_dan">Người Dân</option>
+                    <option value="can_bo">Cán Bộ Xử Lý</option>
+                    <option value="quan_tri">Quản Trị Viên</option>
                   </select>
                 </div>
 

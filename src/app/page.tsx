@@ -1,4 +1,4 @@
-"use client";
+"use client"; 
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -36,7 +36,7 @@ export default function LandingPage() {
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute top-0 right-0 w-[800px] h-[800px] rounded-full opacity-20 bg-gradient-to-br from-success-400/40 to-transparent blur-3xl"
+          className="absolute top-0 right-0 w-[800px] h-[800px] rounded-full opacity-20 bg-gradient-to-br from-primary/40 to-transparent blur-3xl"
           animate={{
             x: mousePosition.x * 0.02,
             y: mousePosition.y * 0.02,
@@ -76,13 +76,13 @@ export default function LandingPage() {
                 <motion.a
                   key={item}
                   href={`#${item === "Tính năng" ? "features" : item === "Cách hoạt động" ? "how-it-works" : "stats"}`}
-                  className="text-sm font-medium text-gray-700 transition-colors hover:text-success-600 dark:text-gray-300 dark:hover:text-success-400 relative group"
+                  className="text-sm font-medium text-gray-700 transition-colors hover:text-primary dark:text-gray-300 dark:hover:text-primary/80 relative group"
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
                   {item}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-success-500 to-success-600 transition-all group-hover:w-full" />
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/80 transition-all group-hover:w-full" />
                 </motion.a>
               ))}
             </div>
@@ -100,7 +100,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/register"
-                className="px-4 py-2 text-sm font-medium text-white transition-all rounded-lg bg-gradient-to-r from-success-500 to-success-600 hover:shadow-lg hover:shadow-success-500/50 hover:scale-105"
+                className="px-4 py-2 text-sm font-medium text-white transition-all rounded-lg bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg hover:shadow-primary/50 hover:scale-105"
               >
                 Đăng ký
               </Link>
@@ -113,13 +113,13 @@ export default function LandingPage() {
       <section className="relative pt-24 pb-20 overflow-hidden sm:pt-32 sm:pb-32">
         {/* Gradient Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-success-50/30 to-blue-light-50/20 dark:from-gray-950 dark:via-success-950/20 dark:to-blue-light-950/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-primary/10 to-blue-light-50/20 dark:from-gray-950 dark:via-primary/10 dark:to-blue-light-950/10" />
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] dark:opacity-[0.05]" />
         </div>
         
         {/* Animated Decorative Elements */}
         <motion.div
-          className="absolute top-20 right-10 w-72 h-72 bg-gradient-to-br from-success-400/30 to-success-500/20 rounded-full blur-3xl"
+          className="absolute top-20 right-10 w-72 h-72 bg-gradient-to-br from-primary/30 to-primary/20 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
@@ -131,7 +131,7 @@ export default function LandingPage() {
           }}
         />
         <motion.div
-          className="absolute bottom-20 left-10 w-96 h-96 bg-gradient-to-tr from-blue-light-400/20 to-success-400/20 rounded-full blur-3xl"
+          className="absolute bottom-20 left-10 w-96 h-96 bg-gradient-to-tr from-blue-light-400/20 to-primary/20 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.3, 1],
             opacity: [0.2, 0.4, 0.2],
@@ -150,7 +150,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-gradient-to-r from-success-50 to-blue-light-50 dark:from-success-500/10 dark:to-blue-light-500/10 border border-success-200/50 dark:border-success-800/50 shadow-lg"
+              className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-gradient-to-r from-primary/10 to-blue-light-50 dark:from-primary/20 dark:to-blue-light-500/10 border border-primary/30 dark:border-primary/30 shadow-lg"
             >
               <motion.div
                 animate={{ rotate: 360 }}
@@ -158,7 +158,7 @@ export default function LandingPage() {
               >
                 <img src="/images/logo/logo.svg" alt="SmartReportAI Logo" className="w-4 h-4" />
               </motion.div>
-              <span className="text-sm font-medium bg-gradient-to-r from-success-600 to-blue-light-600 dark:from-success-400 dark:to-blue-light-400 bg-clip-text text-transparent">
+              <span className="text-sm font-medium bg-gradient-to-r from-primary to-blue-light-600 dark:from-primary/80 dark:to-blue-light-400 bg-clip-text text-transparent">
                 Hệ thống phản ánh sự cố thông minh
               </span>
             </motion.div>
@@ -170,7 +170,7 @@ export default function LandingPage() {
               className="mb-6 font-bold text-gray-900 text-title-md sm:text-title-lg lg:text-title-xl dark:text-white"
             >
               Phản ánh thông minh,{" "}
-              <span className="bg-gradient-to-r from-success-600 via-success-500 to-blue-light-500 bg-clip-text text-transparent animate-gradient">
+              <span className="bg-gradient-to-r from-primary via-primary/90 to-blue-light-500 bg-clip-text text-transparent animate-gradient">
                 xử lý hiệu quả
               </span>
             </motion.h1>
@@ -195,7 +195,7 @@ export default function LandingPage() {
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center w-full px-6 py-4 text-base font-medium text-white transition-all rounded-xl shadow-xl bg-gradient-to-r from-success-500 via-success-600 to-blue-light-500 hover:shadow-2xl hover:shadow-success-500/50 sm:w-auto group"
+                  className="inline-flex items-center justify-center w-full px-6 py-4 text-base font-medium text-white transition-all rounded-xl shadow-xl bg-gradient-to-r from-primary via-primary/90 to-blue-light-500 hover:shadow-2xl hover:shadow-primary/50 sm:w-auto group"
                 >
                   Bắt đầu ngay
                   <motion.svg
@@ -238,7 +238,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="mt-16 sm:mt-24"
           >
-            <div className="relative p-1 mx-auto rounded-2xl bg-gradient-to-r from-success-500 via-success-600 to-blue-light-500 max-w-6xl shadow-2xl hover:shadow-success-500/30 transition-shadow duration-500">
+            <div className="relative p-1 mx-auto rounded-2xl bg-gradient-to-r from-primary via-primary/90 to-blue-light-500 max-w-6xl shadow-2xl hover:shadow-primary/30 transition-shadow duration-500">
               <div className="overflow-hidden bg-white rounded-xl dark:bg-gray-900">
                 <div className="aspect-video relative">
                   <MapboxMap className="w-full h-full" />
@@ -264,7 +264,7 @@ export default function LandingPage() {
           >
             <h2 className="mb-4 font-bold text-gray-900 text-title-sm sm:text-title-md dark:text-white">
               Tính năng{" "}
-              <span className="bg-gradient-to-r from-success-600 to-success-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 nổi bật
               </span>
             </h2>
@@ -279,16 +279,16 @@ export default function LandingPage() {
                 icon: () => <img src="/images/logo/logo.svg" alt="SmartReportAI Logo" className="w-8 h-8" />,
                 title: "Thời gian thực",
                 desc: "Theo dõi và cập nhật phản ánh sự cố ngay lập tức với hệ thống thời gian thực, đảm bảo phản hồi nhanh chóng.",
-                gradient: "from-success-500 to-success-600",
-                bgGradient: "from-success-50 to-success-100 dark:from-success-500/10 dark:to-success-600/10",
+                gradient: "from-primary to-primary/80",
+                bgGradient: "from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30",
                 delay: 0,
               },
               {
                 icon: CheckCircleIcon,
                 title: "Blockchain minh bạch",
                 desc: "Mọi phân phối được ghi lại trên blockchain, đảm bảo tính minh bạch và có thể truy vết hoàn toàn.",
-                gradient: "from-success-500 to-success-600",
-                bgGradient: "from-success-50 to-success-100 dark:from-success-500/10 dark:to-success-500/20",
+                gradient: "from-primary to-primary/80",
+                bgGradient: "from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30",
                 delay: 0.1,
               },
               {
@@ -336,7 +336,7 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: feature.delay }}
                 whileHover={{ y: -10, transition: { duration: 0.3 } }}
-                className="relative p-8 overflow-hidden transition-all bg-white border border-gray-200 group rounded-2xl hover:shadow-2xl hover:shadow-success-500/10 dark:bg-gray-800/50 dark:border-gray-700 dark:hover:border-success-600/30 backdrop-blur-sm"
+                className="relative p-8 overflow-hidden transition-all bg-white border border-gray-200 group rounded-2xl hover:shadow-2xl hover:shadow-primary/10 dark:bg-gray-800/50 dark:border-gray-700 dark:hover:border-primary/30 backdrop-blur-sm"
               >
                 {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
@@ -362,7 +362,7 @@ export default function LandingPage() {
                   >
                     <feature.icon className="w-7 h-7 text-white" />
                   </motion.div>
-                  <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white group-hover:text-success-700 dark:group-hover:text-success-400 transition-colors">
+                  <h3 className="mb-3 text-xl font-semibold text-gray-900 dark:text-white group-hover:text-primary dark:group-hover:text-primary/80 transition-colors">
                     {feature.title}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
@@ -392,14 +392,14 @@ export default function LandingPage() {
 
           <div className="relative">
             {/* Connection Line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-success-500 via-success-600 to-blue-light-500 hidden lg:block"></div>
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary/90 to-blue-light-500 hidden lg:block"></div>
 
             <div className="space-y-12">
               {/* Step 1 */}
               <div className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2">
                 <div className="lg:text-right">
-                  <div className="inline-block p-4 mb-4 rounded-lg bg-success-100 dark:bg-success-500/10">
-                    <span className="text-2xl font-bold text-success-600 dark:text-success-400">
+                  <div className="inline-block p-4 mb-4 rounded-lg bg-primary/10 dark:bg-primary/20">
+                    <span className="text-2xl font-bold text-primary dark:text-primary/80">
                       01
                     </span>
                   </div>
@@ -412,20 +412,20 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <div className="relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 lg:ml-12">
-                  <div className="absolute left-0 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-success-500 hidden lg:block"></div>
-                  <div className="aspect-video bg-gradient-to-br from-success-100 to-success-200 dark:from-success-900/20 dark:to-success-800/20 rounded-xl"></div>
+                  <div className="absolute left-0 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-primary hidden lg:block"></div>
+                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/30 dark:from-primary/20 dark:to-primary/30 rounded-xl"></div>
                 </div>
               </div>
 
               {/* Step 2 */}
               <div className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2">
                 <div className="relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 lg:mr-12 lg:order-1">
-                  <div className="absolute right-0 w-4 h-4 transform translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-success-600 hidden lg:block"></div>
-                  <div className="aspect-video bg-gradient-to-br from-success-100 to-success-200 dark:from-success-900/20 dark:to-success-800/20 rounded-xl"></div>
+                  <div className="absolute right-0 w-4 h-4 transform translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-primary hidden lg:block"></div>
+                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/30 dark:from-primary/20 dark:to-primary/30 rounded-xl"></div>
                 </div>
                 <div className="lg:order-2">
-                  <div className="inline-block p-4 mb-4 rounded-lg bg-success-100 dark:bg-success-500/10">
-                    <span className="text-2xl font-bold text-success-600 dark:text-success-400">
+                  <div className="inline-block p-4 mb-4 rounded-lg bg-primary/10 dark:bg-primary/20">
+                    <span className="text-2xl font-bold text-primary dark:text-primary/80">
                       02
                     </span>
                   </div>
@@ -442,8 +442,8 @@ export default function LandingPage() {
               {/* Step 3 */}
               <div className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2">
                 <div className="lg:text-right">
-                  <div className="inline-block p-4 mb-4 rounded-lg bg-success-100 dark:bg-success-500/10">
-                    <span className="text-2xl font-bold text-success-500 dark:text-success-400">
+                  <div className="inline-block p-4 mb-4 rounded-lg bg-primary/10 dark:bg-primary/20">
+                    <span className="text-2xl font-bold text-primary dark:text-primary/80">
                       03
                     </span>
                   </div>
@@ -456,8 +456,8 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <div className="relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 lg:ml-12">
-                  <div className="absolute left-0 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-success-500 hidden lg:block"></div>
-                  <div className="aspect-video bg-gradient-to-br from-success-100 to-success-200 dark:from-success-900/20 dark:to-success-800/20 rounded-xl"></div>
+                  <div className="absolute left-0 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-primary hidden lg:block"></div>
+                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/30 dark:from-primary/20 dark:to-primary/30 rounded-xl"></div>
                 </div>
               </div>
 
@@ -501,8 +501,8 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-2xl bg-success-100 dark:bg-success-500/10">
-                <GroupIcon className="w-8 h-8 text-success-600 dark:text-success-400" />
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 dark:bg-primary/20">
+                <GroupIcon className="w-8 h-8 text-primary dark:text-primary/80" />
               </div>
               <div className="mb-2 font-bold text-gray-900 text-title-md dark:text-white">
                 10,000+
@@ -513,8 +513,8 @@ export default function LandingPage() {
             </div>
 
             <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-2xl bg-success-100 dark:bg-success-500/10">
-                <CheckCircleIcon className="w-8 h-8 text-success-500 dark:text-success-400" />
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 dark:bg-primary/20">
+                <CheckCircleIcon className="w-8 h-8 text-primary dark:text-primary/80" />
               </div>
               <div className="mb-2 font-bold text-gray-900 text-title-md dark:text-white">
                 5,000+
@@ -537,7 +537,7 @@ export default function LandingPage() {
             </div>
 
             <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-2xl bg-success-100 dark:bg-success-500/10">
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 dark:bg-primary/20">
                 <img src="/images/logo/logo.svg" alt="SmartReportAI Logo" className="w-10 h-10" />
               </div>
               <div className="mb-2 font-bold text-gray-900 text-title-md dark:text-white">
@@ -554,7 +554,7 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="relative py-20 overflow-hidden sm:py-32">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-success-600 via-success-500 to-blue-light-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-blue-light-500"></div>
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
         
         {/* Animated Orbs */}
@@ -572,7 +572,7 @@ export default function LandingPage() {
           }}
         />
         <motion.div
-          className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-success-900 rounded-full blur-3xl opacity-30"
+          className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary rounded-full blur-3xl opacity-30"
           animate={{
             scale: [1, 1.3, 1],
             x: [0, -30, 0],
@@ -620,7 +620,7 @@ export default function LandingPage() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center w-full px-8 py-4 text-base font-semibold transition-all bg-white rounded-xl shadow-2xl text-success-700 hover:bg-success-50 hover:shadow-white/30 sm:w-auto group"
+                className="inline-flex items-center justify-center w-full px-8 py-4 text-base font-semibold transition-all bg-white rounded-xl shadow-2xl text-primary hover:bg-primary/10 hover:shadow-white/30 sm:w-auto group"
               >
                 Đăng ký miễn phí
                 <motion.svg
@@ -652,29 +652,42 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-gradient-to-b from-gray-900 to-gray-950 border-t border-gray-800">
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <footer className="relative py-16 overflow-hidden">
+        {/* Background with subtle primary accent */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-700 via-gray-800 to-gray-900"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+        
+        {/* Subtle decorative elements */}
+        <div className="absolute top-10 right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
+        
+        <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="flex items-center mb-4"
+                className="flex items-center mb-6"
               >
-                <img src="/images/logo/logo.svg" alt="SmartReportAI Logo" className="h-10 w-auto" />
+                <div className="relative">
+                  <img src="/images/logo/logo.svg" alt="SmartReportAI Logo" className="h-10 w-auto" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-lg blur-xl opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
               </motion.div>
-              <p className="mb-4 text-gray-400">
+              <p className="mb-4 text-gray-200">
                 Hệ thống phản ánh và xử lý sự cố thông minh với AI và Blockchain.
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-300">
                 © 2025 SmartReportAI. All rights reserved.
               </p>
             </div>
 
             <div>
-              <h3 className="mb-4 text-sm font-semibold text-white uppercase tracking-wider">
+              <h3 className="mb-6 text-sm font-semibold text-white uppercase tracking-wider relative">
                 Sản phẩm
+                <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-primary to-primary/50"></div>
               </h3>
               <ul className="space-y-2">
                 {["Tính năng", "Bảng giá", "API"].map((item, index) => (
@@ -687,10 +700,10 @@ export default function LandingPage() {
                   >
                     <a
                       href={item === "Tính năng" ? "#features" : "#"}
-                      className="text-gray-400 transition-colors hover:text-success-400 relative group inline-block"
+                      className="text-gray-200 transition-colors hover:text-primary/80 relative group inline-block"
                     >
                       {item}
-                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-success-500 to-success-600 transition-all group-hover:w-full" />
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/80 transition-all group-hover:w-full" />
                     </a>
                   </motion.li>
                 ))}
@@ -698,8 +711,9 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h3 className="mb-4 text-sm font-semibold text-white uppercase tracking-wider">
+              <h3 className="mb-6 text-sm font-semibold text-white uppercase tracking-wider relative">
                 Công ty
+                <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-primary to-primary/50"></div>
               </h3>
               <ul className="space-y-2">
                 {["Về chúng tôi", "Blog", "Liên hệ"].map((item, index) => (
@@ -712,10 +726,10 @@ export default function LandingPage() {
                   >
                     <a
                       href="#"
-                      className="text-gray-400 transition-colors hover:text-success-400 relative group inline-block"
+                      className="text-gray-200 transition-colors hover:text-primary/80 relative group inline-block"
                     >
                       {item}
-                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-success-500 to-success-600 transition-all group-hover:w-full" />
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/80 transition-all group-hover:w-full" />
                     </a>
                   </motion.li>
                 ))}

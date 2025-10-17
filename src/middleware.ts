@@ -30,37 +30,37 @@ export async function middleware(request: NextRequest) {
   }
 
   // Role-based access control
-  const userRole = payload.vai_tro;
+  const userRole = payload.role;
 
-  // Admin routes - only for admin
-  if (pathname.startsWith("/admin") && userRole !== "admin") {
+  // Admin routes - only for quan_tri
+  if (pathname.startsWith("/admin") && userRole !== "quan_tri") {
     return NextResponse.redirect(
       new URL(
-        userRole === "tinh_nguyen_vien"
-          ? "/volunteer/dashboard"
+        userRole === "can_bo"
+          ? "/staff/dashboard"
           : "/citizen/dashboard",
         request.url,
       ),
     );
   }
 
-  // Volunteer routes - only for volunteers
-  if (pathname.startsWith("/volunteer") && userRole !== "tinh_nguyen_vien") {
+  // Staff routes - only for can_bo
+  if (pathname.startsWith("/staff") && userRole !== "can_bo") {
     return NextResponse.redirect(
       new URL(
-        userRole === "admin" ? "/admin/dashboard" : "/citizen/dashboard",
+        userRole === "quan_tri" ? "/admin/dashboard" : "/citizen/dashboard",
         request.url,
       ),
     );
   }
 
-  // Citizen routes - only for citizens
+  // Citizen routes - only for nguoi_dan
   if (pathname.startsWith("/citizen") && userRole !== "nguoi_dan") {
     return NextResponse.redirect(
       new URL(
-        userRole === "admin"
+        userRole === "quan_tri"
           ? "/admin/dashboard"
-          : "/volunteer/dashboard",
+          : "/staff/dashboard",
         request.url,
       ),
     );
@@ -73,7 +73,7 @@ export const config = {
   matcher: [
     "/api/:path*",
     "/admin/:path*",
-    "/volunteer/:path*",
+    "/staff/:path*",
     "/citizen/:path*",
   ],
 };

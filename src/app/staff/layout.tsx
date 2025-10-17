@@ -1,17 +1,17 @@
 "use client";
 
-import CitizenSidebar from "@/layout/citizen/CitizenSidebar";
-import CitizenHeader from "@/layout/citizen/CitizenHeader";
-import { CitizenSidebarProvider, useCitizenSidebar } from "@/context/CitizenSidebarContext";
+import StaffSidebar from "@/layout/staff/StaffSidebar";
+import StaffHeader from "@/layout/staff/StaffHeader";
+import { StaffSidebarProvider, useStaffSidebar } from "@/context/StaffSidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import CitizenBackdrop from "@/layout/citizen/CitizenBackdrop";
+import StaffBackdrop from "@/layout/staff/StaffBackdrop";
 
-function CitizenLayoutContent({
+function StaffLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isExpanded, isHovered, isMobileOpen } = useCitizenSidebar();
+  const { isExpanded, isHovered, isMobileOpen } = useStaffSidebar();
 
   // Dynamic class for main content margin based on sidebar state
   const mainContentMargin = isMobileOpen
@@ -22,13 +22,13 @@ function CitizenLayoutContent({
 
   return (
     <div className="min-h-screen xl:flex">
-      <CitizenSidebar />
-      <CitizenBackdrop />
+      <StaffSidebar />
+      <StaffBackdrop />
       <div
         className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}
       >
         {/* Header */}
-        <CitizenHeader />
+        <StaffHeader />
         {/* Page Content */}
         <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
       </div>
@@ -36,16 +36,16 @@ function CitizenLayoutContent({
   ); 
 }
 
-export default function CitizenLayout({
+export default function StaffLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <ThemeProvider>
-      <CitizenSidebarProvider>
-        <CitizenLayoutContent>{children}</CitizenLayoutContent>
-      </CitizenSidebarProvider>
+      <StaffSidebarProvider>
+        <StaffLayoutContent>{children}</StaffLayoutContent>
+      </StaffSidebarProvider>
     </ThemeProvider>
   );
 }
