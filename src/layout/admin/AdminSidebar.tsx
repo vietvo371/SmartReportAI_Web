@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAdminSidebar } from "@/context/AdminSidebarContext";
 import { HorizontaLDots } from "@/icons/index";
-import { Brain, Users, Truck, Package, FileText, LayoutDashboard, Building2, User } from "lucide-react";
+import { Brain, Users, AlertTriangle, MapPin, BarChart3, Settings, User, Shield, Activity } from "lucide-react";
 import SidebarWidget from "@/layout/SidebarWidget";
 
 type NavItem = {
@@ -15,13 +15,13 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Yêu cầu cứu trợ", href: "/admin/requests", icon: FileText },
-  { name: "Nguồn lực", href: "/admin/resources", icon: Package },
-  { name: "Trung tâm", href: "/admin/centers", icon: Building2 },
-  { name: "Phân phối", href: "/admin/distributions", icon: Truck },
-  { name: "Người dùng", href: "/admin/users", icon: Users },
-  { name: "AI Dự báo", href: "/admin/ai", icon: Brain },
+  { name: "Dashboard", href: "/admin/dashboard", icon: BarChart3 },
+  { name: "Sự cố hạ tầng", href: "/admin/reports", icon: AlertTriangle },
+  { name: "Bản đồ", href: "/admin/map", icon: MapPin },
+  { name: "Đội xử lý", href: "/admin/teams", icon: Users },
+  { name: "Thống kê", href: "/admin/statistics", icon: Activity },
+  { name: "AI Phân tích", href: "/admin/ai", icon: Brain },
+  { name: "Cài đặt", href: "/admin/settings", icon: Settings },
   { name: "Hồ sơ", href: "/admin/profile", icon: User },
 ];
 
@@ -98,7 +98,7 @@ const AdminSidebar: React.FC = () => {
             </>
           ) : (
             <Image
-              src="/images/logo/logo-icon.png"
+              src="/images/logo/logo-icon.svg"
               alt="Logo"
               width={32}
               height={32}

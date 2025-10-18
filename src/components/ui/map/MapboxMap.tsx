@@ -3,29 +3,69 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Report } from '@/types/report';
 
 interface MapboxMapProps {
   className?: string;
+  reports?: Report[];
 }
 
-const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
+const MapboxMap: React.FC<MapboxMapProps> = ({ className = '', reports = [] }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Helper function to convert reports to GeoJSON features
+  const convertReportsToFeatures = (reports: Report[]) => {
+    return reports.map((report) => {
+      const getPriority = (mucDo: number) => {
+        if (mucDo >= 4) return 'critical';
+        if (mucDo >= 3) return 'high';
+        if (mucDo >= 2) return 'medium';
+        return 'low';
+      };
+
+      const getStatus = (trangThai: string) => {
+        switch (trangThai) {
+          case 'cho_xu_ly': return 'pending';
+          case 'dang_xu_ly': return 'in-progress';
+          case 'da_hoan_tat': return 'resolved';
+          default: return 'pending';
+        }
+      };
+
+      return {
+        type: 'Feature' as const,
+        properties: {
+          id: report.id,
+          name: report.tieu_de,
+          type: report.loai_su_co,
+          priority: getPriority(report.muc_do_nghiem_trong),
+          status: getStatus(report.trang_thai),
+          reportedBy: report.nguoi_dung?.ho_ten || 'Không xác định',
+          reportedAt: report.created_at,
+          description: report.mo_ta || '',
+          muc_do: report.muc_do_nghiem_trong
+        },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [report.kinh_do, report.vi_do]
+        }
+      };
+    });
+  };
+
+  // Initialize map
   useEffect(() => {
-    if (map.current) return; // initialize map only once
+    if (map.current || !mapContainer.current) return;
 
-    // You'll need to add your Mapbox access token to environment variables
-    // Get your free token from: https://account.mapbox.com/access-tokens/
     const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-
     mapboxgl.accessToken = MAPBOX_TOKEN;
 
     map.current = new mapboxgl.Map({
-      container: mapContainer.current!,
+      container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [105.8342, 21.0278], // Hanoi, Vietnam
+      center: [108.1654204, 16.0472473], // Hanoi, Vietnam
       zoom: 10,
       pitch: 45,
       bearing: -17.6,
@@ -37,88 +77,14 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
       
       if (!map.current) return;
 
+      const features = convertReportsToFeatures(reports);
+
       // Add infrastructure issues
       map.current.addSource('infrastructure-issues', {
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              properties: {
-                name: 'Ổ gà đường Nguyễn Huệ',
-                type: 'pothole',
-                priority: 'high',
-                status: 'pending',
-                reportedBy: 'Nguyễn Văn A',
-                reportedAt: '2025-01-15T08:30:00Z'
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: [105.7842, 21.0278]
-              }
-            },
-            {
-              type: 'Feature',
-              properties: {
-                name: 'Ngập lụt khu vực Cầu Giấy',
-                type: 'flooding',
-                priority: 'critical',
-                status: 'in-progress',
-                reportedBy: 'Trần Thị B',
-                reportedAt: '2025-01-15T09:15:00Z'
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: [105.8842, 21.1278]
-              }
-            },
-            {
-              type: 'Feature',
-              properties: {
-                name: 'Đèn giao thông hỏng',
-                type: 'traffic-light',
-                priority: 'medium',
-                status: 'resolved',
-                reportedBy: 'Lê Văn C',
-                reportedAt: '2025-01-14T16:45:00Z'
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: [105.7342, 20.9278]
-              }
-            },
-            {
-              type: 'Feature',
-              properties: {
-                name: 'Rác thải tập trung',
-                type: 'waste',
-                priority: 'low',
-                status: 'pending',
-                reportedBy: 'Phạm Thị D',
-                reportedAt: '2025-01-15T10:20:00Z'
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: [105.8142, 21.0478]
-              }
-            },
-            {
-              type: 'Feature',
-              properties: {
-                name: 'Kẹt xe tại ngã tư',
-                type: 'traffic-jam',
-                priority: 'high',
-                status: 'in-progress',
-                reportedBy: 'Hoàng Văn E',
-                reportedAt: '2025-01-15T07:30:00Z'
-              },
-              geometry: {
-                type: 'Point',
-                coordinates: [105.9042, 21.1078]
-              }
-            }
-          ]
+          features: features
         }
       });
 
@@ -179,17 +145,17 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
         paint: {
           'circle-radius': [
             'case',
-            ['==', ['get', 'priority'], 'critical'], 14,
-            ['==', ['get', 'priority'], 'high'], 12,
-            ['==', ['get', 'priority'], 'medium'], 10,
-            8
+            ['>=', ['get', 'muc_do'], 4], 14,  // Khẩn cấp
+            ['==', ['get', 'muc_do'], 3], 12,  // Ưu tiên cao
+            ['==', ['get', 'muc_do'], 2], 10,  // Ưu tiên trung bình
+            8  // Ưu tiên thấp
           ],
           'circle-color': [
             'case',
-            ['==', ['get', 'priority'], 'critical'], '#DC2626',
-            ['==', ['get', 'priority'], 'high'], '#EF4444',
-            ['==', ['get', 'priority'], 'medium'], '#F59E0B',
-            '#6B7280'
+            ['>=', ['get', 'muc_do'], 4], '#DC2626',  // Khẩn cấp - đỏ
+            ['==', ['get', 'muc_do'], 3], '#F97316',  // Ưu tiên cao - cam
+            ['==', ['get', 'muc_do'], 2], '#EAB308',  // Ưu tiên trung bình - vàng
+            '#6B7280'  // Ưu tiên thấp - xám
           ],
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
@@ -221,7 +187,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
         id: 'critical-issues-pulse',
         type: 'circle',
         source: 'infrastructure-issues',
-        filter: ['==', ['get', 'priority'], 'critical'],
+        filter: ['>=', ['get', 'muc_do'], 4],
         paint: {
           'circle-radius': {
             'base': 14,
@@ -253,14 +219,21 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
         const properties = e.features?.[0]?.properties;
         
         if (map.current) {
-          const priorityColors = {
-            'critical': '#DC2626',
-            'high': '#EF4444',
-            'medium': '#F59E0B',
-            'low': '#6B7280'
+          const getPriorityColor = (mucDo: number) => {
+            if (mucDo >= 4) return '#DC2626';  // Khẩn cấp - đỏ
+            if (mucDo === 3) return '#F97316';  // Ưu tiên cao - cam
+            if (mucDo === 2) return '#EAB308';  // Ưu tiên trung bình - vàng
+            return '#6B7280';  // Ưu tiên thấp - xám
+          };
+
+          const getPriorityText = (mucDo: number) => {
+            if (mucDo >= 4) return 'Khẩn cấp';
+            if (mucDo === 3) return 'Ưu tiên cao';
+            if (mucDo === 2) return 'Ưu tiên trung bình';
+            return 'Ưu tiên thấp';
           };
           
-          const statusText = {
+          const statusText: Record<string, string> = {
             'pending': 'Chờ xử lý',
             'in-progress': 'Đang xử lý',
             'resolved': 'Đã giải quyết'
@@ -269,15 +242,17 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
           new mapboxgl.Popup()
             .setLngLat(coordinates)
             .setHTML(`
-              <div class="p-3 min-w-[200px]">
+              <div class="p-3 min-w-[250px]">
                 <h3 class="font-semibold text-gray-800 mb-2">${properties?.name}</h3>
-                <div class="space-y-1 text-sm">
+                <div class="space-y-2 text-sm">
                   <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full" style="background-color: ${priorityColors[properties?.priority]}"></span>
-                    <span class="text-gray-600">Ưu tiên: ${properties?.priority}</span>
+                    <span class="w-2 h-2 rounded-full" style="background-color: ${getPriorityColor(properties?.muc_do || 1)}"></span>
+                    <span class="text-gray-600">Mức độ: ${getPriorityText(properties?.muc_do || 1)} (${properties?.muc_do}/5)</span>
                   </div>
-                  <div class="text-gray-600">Trạng thái: ${statusText[properties?.status]}</div>
+                  <div class="text-gray-600">Loại sự cố: ${properties?.type}</div>
+                  <div class="text-gray-600">Trạng thái: ${statusText[properties?.status as string] || 'Không xác định'}</div>
                   <div class="text-gray-600">Báo cáo bởi: ${properties?.reportedBy}</div>
+                  ${properties?.description ? `<div class="text-gray-500 text-xs mt-2 p-2 bg-gray-50 rounded">${properties?.description}</div>` : ''}
                   <div class="text-gray-500 text-xs">${new Date(properties?.reportedAt).toLocaleString('vi-VN')}</div>
                 </div>
               </div>
@@ -338,9 +313,40 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
     return () => {
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
   }, []);
+
+  // Update map data when reports change
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    const features = convertReportsToFeatures(reports);
+
+    // Update the data source
+    const source = map.current.getSource('infrastructure-issues') as mapboxgl.GeoJSONSource;
+    if (source) {
+      source.setData({
+        type: 'FeatureCollection',
+        features: features
+      });
+    }
+  }, [reports, isLoaded]);
+
+  // Handle map resize when container size changes
+  useEffect(() => {
+    if (!map.current || !isLoaded) return;
+
+    const handleResize = () => {
+      if (map.current) {
+        map.current.resize();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isLoaded]);
 
   return (
     <div className={`relative ${className}`}>
@@ -354,16 +360,24 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
             <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Tình trạng hạ tầng</div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-gray-700 dark:text-gray-300">1 Khẩn cấp</span>
+                <div className={`w-3 h-3 bg-red-500 rounded-full ${reports.filter(r => r.muc_do_nghiem_trong >= 4).length > 0 ? 'animate-pulse' : ''}`}></div>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{reports.filter(r => r.muc_do_nghiem_trong >= 4).length} Khẩn cấp</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span className="text-xs text-gray-700 dark:text-gray-300">2 Cao</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{reports.filter(r => r.muc_do_nghiem_trong === 3).length} Ưu tiên cao</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{reports.filter(r => r.muc_do_nghiem_trong === 2).length} Ưu tiên trung bình</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                <span className="text-xs text-gray-700 dark:text-gray-300">2 Đã xử lý</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{reports.filter(r => r.muc_do_nghiem_trong === 1).length} Ưu tiên thấp</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-gray-700 dark:text-gray-300">{reports.filter(r => r.trang_thai === 'da_hoan_tat').length} Đã xử lý</span>
               </div>
             </div>
           </div>
@@ -371,28 +385,14 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '' }) => {
           {/* Live Stats */}
           <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
             <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Hiệu quả xử lý</div>
-            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">85%</div>
-            <div className="text-xs text-gray-500">Trung bình 2.3h</div>
-          </div>
-
-          {/* Map Legend */}
-          <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Chú thích</div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Sự cố khẩn cấp</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Ưu tiên cao</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Đội xử lý</span>
-              </div>
+            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+              {reports.length > 0 ? Math.round((reports.filter(r => r.trang_thai === 'da_hoan_tat').length / reports.length) * 100) : 0}%
+            </div>
+            <div className="text-xs text-gray-500">
+              {reports.length} tổng cộng
             </div>
           </div>
+
 
           {/* AI Processing Badge */}
           <div className="absolute bottom-4 right-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-3 py-1 rounded-full shadow-lg">
