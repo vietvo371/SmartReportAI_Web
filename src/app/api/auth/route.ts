@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { sign } from "jsonwebtoken";
+import { signToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,17 +31,11 @@ export async function POST(req: NextRequest) {
       }
 
       // Generate JWT token
-      const token = sign(
-        {
-          userId: user.id,
-          email: user.email,
-          role: user.vai_tro,
-        },
-        process.env.JWT_SECRET || "your-secret-key",
-        {
-          expiresIn: "7d",
-        }
-      );
+      const token = await signToken({
+        userId: user.id,
+        email: user.email,
+        vai_tro: user.vai_tro,
+      });
 
       // Save token to database
       await prisma.token.create({
@@ -53,7 +47,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         message: "Đăng nhập thành công",
         user: {
           id: user.id,
@@ -66,6 +60,17 @@ export async function POST(req: NextRequest) {
         },
         token,
       });
+
+      // Set token cookie
+      response.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+        path: '/',
+      });
+
+      return response;
 
     } else if (action === "register") {
       // Check if user exists
@@ -96,17 +101,11 @@ export async function POST(req: NextRequest) {
       });
 
       // Generate JWT token
-      const token = sign(
-        {
-          userId: user.id,
-          email: user.email,
-          role: user.vai_tro,
-        },
-        process.env.JWT_SECRET || "your-secret-key",
-        {
-          expiresIn: "7d",
-        }
-      );
+      const token = await signToken({
+        userId: user.id,
+        email: user.email,
+        vai_tro: user.vai_tro,
+      });
 
       // Save token to database
       await prisma.token.create({
@@ -118,7 +117,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         message: "Đăng ký thành công",
         user: {
           id: user.id,
@@ -131,6 +130,17 @@ export async function POST(req: NextRequest) {
         },
         token,
       });
+
+      // Set token cookie
+      response.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+        path: '/',
+      });
+
+      return response;
     }
 
     return NextResponse.json(

@@ -24,6 +24,7 @@ model NguoiDung {
   tokens       Token[]
   lich_su_danh_gias LichSuDanhGia[]
   xu_lys       XuLy[]
+  ai_analyses  AiAnalysis[]
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 }
@@ -101,4 +102,21 @@ model Token {
   het_han       DateTime
   nguoi_dung    NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
   created_at    DateTime @default(now())
+}
+
+model AiAnalysis {
+  id                    Int      @id @default(autoincrement())
+  nguoi_dung_id         Int
+  image_url             String?
+  image_base64          String?
+  predicted_label       String   // pothole, flooding, traffic_light, waste, traffic_jam
+  confidence_score      Float
+  description           String?
+  severity              String   // low, medium, high, critical
+  suggested_priority    String   // low, medium, high, critical
+  location_hints        String[] // Array of location hints
+  model_version         String
+  processing_time_ms    Int
+  nguoi_dung            NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
+  created_at            DateTime @default(now())
 }

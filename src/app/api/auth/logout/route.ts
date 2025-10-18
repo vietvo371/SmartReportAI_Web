@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verify } from "jsonwebtoken";
+import { verifyToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +15,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify token
-    const decoded = verify(token, process.env.JWT_SECRET || "your-secret-key") as any;
+    const decoded = await verifyToken(token);
+    
+    if (!decoded) {
+      return NextResponse.json(
+        { error: "Token không hợp lệ" },
+        { status: 401 }
+      );
+    }
     
     // Delete token from database
     await prisma.token.deleteMany({

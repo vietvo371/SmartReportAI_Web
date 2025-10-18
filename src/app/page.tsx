@@ -10,6 +10,8 @@ import {
   ChevronDownIcon,
 } from "@/icons";
 import MapboxMap from "@/components/ui/map/MapboxMap";
+import TokenDebugger from "@/components/auth/TokenDebugger";
+import RoleTester from "@/components/auth/RoleTester";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
@@ -738,6 +740,11 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+      
+      {/* Token Debugger - Remove in production */}
+      {/* <TokenDebugger /> */}
+      
+      {/* Role Tester - Remove in production */}
     </div>
   );
 }

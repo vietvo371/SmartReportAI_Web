@@ -55,16 +55,24 @@ export default function SignInForm() {
         throw new Error(data.error || "Xác thực thất bại");
       }
 
+      console.log("Login response:", data);
+      console.log("User role:", data.user.vai_tro);
+
       login(data.user, data.token);
       success("🎉 Đăng nhập thành công!");
       
       // Redirect based on role
       const role = data.user.vai_tro;
+      console.log("Redirecting based on role:", role);
+      
       if (role === "quan_tri") {
+        console.log("Redirecting to admin dashboard");
         router.push("/admin/dashboard");
       } else if (role === "can_bo") {
+        console.log("Redirecting to staff dashboard");
         router.push("/staff/dashboard");
       } else {
+        console.log("Redirecting to citizen dashboard");
         router.push("/citizen/dashboard");
       }
     } catch (err: any) {
