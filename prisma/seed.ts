@@ -107,14 +107,14 @@ async function main() {
       nguoi_dung_id: nguoiDan2.id,
       tieu_de: 'Rác thải không được thu gom',
       mo_ta: 'Khu vực chợ Bến Thành có rất nhiều rác thải không được thu gom, gây ô nhiễm môi trường và ảnh hưởng đến sức khỏe người dân.',
-      loai_su_co: 'moi_truong',
+      loai_su_co: 'waste',
       vi_do: 10.7719,
       kinh_do: 106.6984,
       hinh_anh_url: '/images/cards/card-02.jpg',
       muc_do_nghiem_trong: 3,
       trang_thai: 'dang_xu_ly',
       ai_nhan_dang: {
-        loai_su_co: 'moi_truong',
+        loai_su_co: 'waste',
         muc_do_tin_cay: 0.88,
         thoi_gian_du_doan: '2024-01-14T14:20:00Z'
       },
@@ -126,14 +126,14 @@ async function main() {
       nguoi_dung_id: nguoiDan1.id,
       tieu_de: 'Cây xanh bị đổ do bão',
       mo_ta: 'Sau cơn bão, nhiều cây xanh trên đường Nguyễn Huệ bị đổ, chặn lối đi và có thể gây nguy hiểm.',
-      loai_su_co: 'thien_tai',
+      loai_su_co: 'flooding',
       vi_do: 10.7756,
       kinh_do: 106.7019,
       hinh_anh_url: '/images/cards/card-03.jpg',
       muc_do_nghiem_trong: 5,
       trang_thai: 'da_hoan_tat',
       ai_nhan_dang: {
-        loai_su_co: 'thien_tai',
+        loai_su_co: 'flooding',
         muc_do_tin_cay: 0.92,
         thoi_gian_du_doan: '2024-01-13T08:15:00Z'
       },

@@ -94,7 +94,7 @@ function ToastContainer({
   removeToast: (id: string) => void;
 }) {
   return (
-    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm">
+    <div className="fixed top-4 right-4 z-[200000] flex flex-col gap-2 max-w-sm">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
       ))}
