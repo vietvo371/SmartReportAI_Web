@@ -34,11 +34,12 @@ model PhanAnh {
   nguoi_dung_id     Int
   tieu_de           String
   mo_ta             String?
-  loai_su_co        String // ( pothole, flooding, traffic_light,waste,traffic_jam,other)
+  loai_su_co        String // (pothole, flooding, traffic_light,waste,traffic_jam,other)
   vi_do             Float
   kinh_do           Float
+  dia_chi           String?
   hinh_anh_url      String?
-  muc_do_nghiem_trong Int  (1,2,3,4,5)
+  muc_do_nghiem_trong Int  // (1,2,3,4,5)
   trang_thai        String   // cho_xu_ly, dang_xu_ly, da_hoan_tat
   ai_nhan_dang      Json?
   xu_lys            XuLy[]

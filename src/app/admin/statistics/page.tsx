@@ -22,7 +22,7 @@ type StatisticsResponse = {
     typeStats: TypeStat[];
     locationStats: LocationStat[];
     avgProcessingTime?: number | null;
-    timeSeries?: Array<{ date: string; count: number }>; 
+    timeSeries?: Array<{ date: string; count: number }>;
   };
 };
 
@@ -35,6 +35,36 @@ export default function AdminStatisticsPage() {
     from: "",
     to: "",
   });
+
+  const renderTrangThai = (trangThai: string) => {
+    switch (trangThai) {
+      case 'da_hoan_tat':
+        return 'Đã hoàn thành';
+      case 'cho_xu_ly':
+        return 'Chờ xử lý';
+      case 'dang_xu_ly':
+        return 'Đang xử lý';
+      default:
+        return 'Chờ xử lý';
+    }
+  };
+
+  const renderLoaiSuCo = (loaiSuCo: string) => {
+    switch (loaiSuCo) {
+      case 'pothole':
+        return 'Hố ga/Lún đường';
+      case 'flooding':
+        return 'Ngập nước';
+      case 'traffic_light':
+        return 'Đèn giao thông';
+      case 'waste':
+        return 'Rác thải';
+      case 'traffic_jam':
+        return 'Kẹt xe';
+      default:
+        return 'Không xác định';  
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -70,7 +100,7 @@ export default function AdminStatisticsPage() {
 
   const statusChartCategories = useMemo(() => {
     if (!stats) return [];
-    return stats.statusStats.map(s => s.trang_thai);
+    return stats.statusStats.map(s => renderTrangThai(s.trang_thai));
   }, [stats]);
 
   // Type Chart Data for ApexCharts
@@ -81,7 +111,7 @@ export default function AdminStatisticsPage() {
 
   const typeChartCategories = useMemo(() => {
     if (!stats) return [];
-    return stats.typeStats.map(t => t.loai_su_co);
+    return stats.typeStats.map(t => renderLoaiSuCo(t.loai_su_co));
   }, [stats]);
 
   // Time Series Data for ApexCharts
@@ -94,7 +124,6 @@ export default function AdminStatisticsPage() {
     if (!stats?.timeSeries) return [];
     return stats.timeSeries.map(item => item.date);
   }, [stats]);
-
   // Status Chart Options
   const statusChartOptions: ApexOptions = {
     colors: ["#22c55e"],
