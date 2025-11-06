@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Users, UserCog, Activity, Filter } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from "recharts";
+import dynamic from "next/dynamic";
+import { ApexOptions } from "apexcharts";
+
+const ReactApexChart = dynamic(() => import("react-apexcharts"), {
+  ssr: false,
+});
 
 type StatusStat = { trang_thai: string; _count: { id: number } };
 type TypeStat = { loai_su_co: string; _count: { id: number } };
@@ -57,18 +62,139 @@ export default function AdminStatisticsPage() {
     fetchStats();
   }, [filters]);
 
+  // Status Chart Data for ApexCharts
   const statusChartData = useMemo(() => {
     if (!stats) return [];
-    return stats.statusStats.map(s => ({ name: s.trang_thai, value: s._count.id }));
+    return stats.statusStats.map(s => s._count.id);
   }, [stats]);
 
+  const statusChartCategories = useMemo(() => {
+    if (!stats) return [];
+    return stats.statusStats.map(s => s.trang_thai);
+  }, [stats]);
+
+  // Type Chart Data for ApexCharts
   const typeChartData = useMemo(() => {
     if (!stats) return [];
-    return stats.typeStats.map(t => ({ name: t.loai_su_co, value: t._count.id }));
+    return stats.typeStats.map(t => t._count.id);
   }, [stats]);
 
-  const COLORS = ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6", "#14b8a6"]; 
-  const timeSeriesData = useMemo(() => stats?.timeSeries || [], [stats]);
+  const typeChartCategories = useMemo(() => {
+    if (!stats) return [];
+    return stats.typeStats.map(t => t.loai_su_co);
+  }, [stats]);
+
+  // Time Series Data for ApexCharts
+  const timeSeriesData = useMemo(() => {
+    if (!stats?.timeSeries) return [];
+    return stats.timeSeries.map(item => item.count);
+  }, [stats]);
+
+  const timeSeriesCategories = useMemo(() => {
+    if (!stats?.timeSeries) return [];
+    return stats.timeSeries.map(item => item.date);
+  }, [stats]);
+
+  // Status Chart Options
+  const statusChartOptions: ApexOptions = {
+    colors: ["#22c55e"],
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "bar",
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "50%",
+        borderRadius: 5,
+        borderRadiusApplication: "end",
+      },
+    },
+    xaxis: {
+      categories: statusChartCategories,
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+    },
+    yaxis: {
+      title: {
+        text: undefined,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    tooltip: {
+      y: {
+        formatter: (val: number) => `${val}`,
+      },
+    },
+  };
+
+  // Type Chart Options (Pie)
+  const typeChartOptions: ApexOptions = {
+    colors: ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6", "#14b8a6"],
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "pie",
+      toolbar: {
+        show: false,
+      },
+    },
+    labels: typeChartCategories,
+    legend: {
+      position: "bottom",
+    },
+    dataLabels: {
+      enabled: false,
+    },
+  };
+
+  // Time Series Chart Options
+  const timeSeriesChartOptions: ApexOptions = {
+    colors: ["#3b82f6"],
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "line",
+      toolbar: {
+        show: false,
+      },
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2,
+    },
+    xaxis: {
+      categories: timeSeriesCategories,
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+    },
+    yaxis: {
+      title: {
+        text: undefined,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    tooltip: {
+      enabled: true,
+    },
+    grid: {
+      show: true,
+      borderColor: "#e5e7eb",
+    },
+  };
 
   if (isLoading) {
     return (
@@ -192,74 +318,100 @@ export default function AdminStatisticsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Time Series Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 lg:col-span-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Xu hướng theo ngày</h3>
           <div className="h-72">
             {timeSeriesData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={timeSeriesData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="max-w-full overflow-x-auto">
+                <ReactApexChart
+                  options={timeSeriesChartOptions}
+                  series={[
+                    {
+                      name: "Số lượng phản ánh",
+                      data: timeSeriesData,
+                    },
+                  ]}
+                  type="line"
+                  height={280}
+                />
+              </div>
             ) : (
               <p className="text-sm text-gray-500 dark:text-gray-400">Không có dữ liệu</p>
             )}
           </div>
         </div>
 
+        {/* Status Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Theo trạng thái</h3>
           <div className="h-64">
             {statusChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={statusChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <XAxis dataKey="name" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#22c55e" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="max-w-full overflow-x-auto">
+                <ReactApexChart
+                  options={statusChartOptions}
+                  series={[
+                    {
+                      name: "Số lượng",
+                      data: statusChartData,
+                    },
+                  ]}
+                  type="bar"
+                  height={256}
+                />
+              </div>
             ) : (
               <p className="text-sm text-gray-500 dark:text-gray-400">Không có dữ liệu</p>
             )}
           </div>
         </div>
 
+        {/* Type Chart (Pie) */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Theo loại sự cố</h3>
           <div className="h-64">
             {typeChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={typeChartData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4}>
-                    {typeChartData.map((_, idx) => (
-                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="max-w-full overflow-x-auto">
+                <ReactApexChart
+                  options={typeChartOptions}
+                  series={typeChartData}
+                  type="pie"
+                  height={256}
+                />
+              </div>
             ) : (
               <p className="text-sm text-gray-500 dark:text-gray-400">Không có dữ liệu</p>
             )}
           </div>
         </div>
 
+        {/* Location Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Khu vực nhiều sự cố</h3>
-          <div className="space-y-3">
-            {stats.locationStats.map((l) => (
-              <div key={l.vi_tri} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-[60%]">{l.vi_tri}</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{l._count.id}</span>
-              </div>
-            ))}
-            {stats.locationStats.length === 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">Không có dữ liệu</p>
+          <div className="space-y-4">
+            {stats.locationStats.length > 0 ? (
+              stats.locationStats.map((l, idx) => {
+                const maxCount = Math.max(...stats.locationStats.map(x => x._count.id));
+                const percentage = (l._count.id / maxCount) * 100;
+                return (
+                  <div key={l.vi_tri} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300" title={l.vi_tri}>
+                        {l.vi_tri}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{l._count.id}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-blue-500 dark:bg-blue-400 h-2 rounded-full transition-all"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Không có dữ liệu</p>
             )}
           </div>
         </div>
