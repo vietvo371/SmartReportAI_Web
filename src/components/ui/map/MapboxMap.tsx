@@ -8,9 +8,18 @@ import { Report } from '@/types/report';
 interface MapboxMapProps {
   className?: string;
   reports?: Report[];
+  center?: [number, number]; // [longitude, latitude]
+  zoom?: number;
+  autoFitBounds?: boolean; // Tự động fit bounds khi có reports
 }
 
-const MapboxMap: React.FC<MapboxMapProps> = ({ className = '', reports = [] }) => {
+const MapboxMap: React.FC<MapboxMapProps> = ({ 
+  className = '', 
+  reports = [],
+  center = [108.2022, 16.0544], // Default: Đà Nẵng
+  zoom = 12,
+  autoFitBounds = false
+}) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -65,10 +74,10 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '', reports = [] }) =
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [108.1654204, 16.0472473], // Hanoi, Vietnam
-      zoom: 10,
-      pitch: 45,
-      bearing: -17.6,
+      center: center,
+      zoom: zoom,
+      pitch: 0,
+      bearing: 0,
       antialias: true
     });
 
@@ -332,7 +341,21 @@ const MapboxMap: React.FC<MapboxMapProps> = ({ className = '', reports = [] }) =
         features: features
       });
     }
-  }, [reports, isLoaded]);
+
+    // Auto fit bounds if enabled and reports exist
+    if (autoFitBounds && reports.length > 0 && map.current) {
+      const bounds = new mapboxgl.LngLatBounds();
+      reports.forEach((report) => {
+        bounds.extend([report.kinh_do, report.vi_do]);
+      });
+      
+      map.current.fitBounds(bounds, {
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+        maxZoom: 15,
+        duration: 1000
+      });
+    }
+  }, [reports, isLoaded, autoFitBounds]);
 
   // Handle map resize when container size changes
   useEffect(() => {

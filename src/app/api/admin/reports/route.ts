@@ -5,13 +5,26 @@ import { verifyToken } from "@/lib/jwt";
 // GET /api/admin/reports - Lấy tất cả phản ánh cho admin
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get("token")?.value;
+    // Get token from header or cookies
+    const authHeader = req.headers.get('Authorization');
+    let token = req.cookies.get("token")?.value;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else if (authHeader && authHeader.startsWith('bearer ')) {
+      token = authHeader.substring(7);
+    }
+    
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const payload = await verifyToken(token);
-    if (!payload || !["quan_tri", "admin"].includes(payload.vai_tro)) {
+    if (!payload || !payload.userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is admin or quan_tri
+    if (!["quan_tri", "admin"].includes(payload.vai_tro)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
