@@ -2,16 +2,57 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
+import {
   CheckCircleIcon,
   BoltIcon,
   BoxIcon,
   GroupIcon,
   ChevronDownIcon,
 } from "@/icons";
+import {
+  UserPlus,
+  AlertTriangle,
+  ClipboardCheck,
+  BarChart3,
+} from "lucide-react";
 import MapboxMap from "@/components/ui/map/MapboxMap";
 import TokenDebugger from "@/components/auth/TokenDebugger";
 import RoleTester from "@/components/auth/RoleTester";
+
+const workflowSteps = [
+  {
+    number: "01",
+    title: "Đăng ký tài khoản",
+    description:
+      "Người dân, cán bộ hoặc quản trị viên tạo tài khoản và được phân quyền phù hợp với vai trò của mình trong hệ thống.",
+    icon: UserPlus,
+    highlight: "from-primary/10 dark:from-primary/20",
+  },
+  {
+    number: "02",
+    title: "Gửi phản ánh sự cố",
+    description:
+      "Người dân gửi phản ánh kèm vị trí, hình ảnh và mức độ. AI tự động nhận dạng và phân loại để ưu tiên xử lý.",
+    icon: AlertTriangle,
+    highlight: "from-orange-100 dark:from-orange-500/10",
+  },
+  {
+    number: "03",
+    title: "Xử lý & xác nhận",
+    description:
+      "Cán bộ tiếp nhận, phân công và cập nhật kết quả xử lý. Mọi thao tác đều được lưu vết trên blockchain.",
+    icon: ClipboardCheck,
+    highlight: "from-green-100 dark:from-green-500/10",
+  },
+  {
+    number: "04",
+    title: "Theo dõi & báo cáo",
+    description:
+      "Các bên liên quan theo dõi tiến độ thời gian thực, xem thống kê và đánh giá mức độ hài lòng của người dân.",
+    icon: BarChart3,
+    highlight: "from-blue-light-100 dark:from-blue-light-500/10",
+  },
+];
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
@@ -388,102 +429,61 @@ export default function LandingPage() {
               Cách hoạt động
             </h2>
             <p className="max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400">
-              Quy trình đơn giản và hiệu quả để phản ánh và xử lý sự cố
+              Quy trình 4 bước rõ ràng giúp phản ánh và xử lý sự cố trơn tru
             </p>
           </div>
 
           <div className="relative">
-            {/* Connection Line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary/90 to-blue-light-500 hidden lg:block"></div>
+            <div className="absolute left-1/2 top-0 bottom-0 hidden w-0.5 bg-gradient-to-b from-primary via-primary/90 to-blue-light-500 lg:block" />
 
             <div className="space-y-12">
-              {/* Step 1 */}
-              <div className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2">
-                <div className="lg:text-right">
-                  <div className="inline-block p-4 mb-4 rounded-lg bg-primary/10 dark:bg-primary/20">
-                    <span className="text-2xl font-bold text-primary dark:text-primary/80">
-                      01
-                    </span>
-                  </div>
-                  <h3 className="mb-3 text-2xl font-semibold text-gray-900 dark:text-white">
-                    Đăng ký tài khoản
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Người dân, cán bộ hoặc quản trị viên tạo tài khoản và 
-                    được phân quyền phù hợp với vai trò của mình trong hệ thống.
-                  </p>
-                </div>
-                <div className="relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 lg:ml-12">
-                  <div className="absolute left-0 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-primary hidden lg:block"></div>
-                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/30 dark:from-primary/20 dark:to-primary/30 rounded-xl"></div>
-                </div>
-              </div>
+              {workflowSteps.map((step, index) => {
+                const Icon = step.icon;
+                const isLeftAligned = index % 2 === 0;
 
-              {/* Step 2 */}
-              <div className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2">
-                <div className="relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 lg:mr-12 lg:order-1">
-                  <div className="absolute right-0 w-4 h-4 transform translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-primary hidden lg:block"></div>
-                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/30 dark:from-primary/20 dark:to-primary/30 rounded-xl"></div>
-                </div>
-                <div className="lg:order-2">
-                  <div className="inline-block p-4 mb-4 rounded-lg bg-primary/10 dark:bg-primary/20">
-                    <span className="text-2xl font-bold text-primary dark:text-primary/80">
-                      02
-                    </span>
-                  </div>
-                  <h3 className="mb-3 text-2xl font-semibold text-gray-900 dark:text-white">
-                    Gửi phản ánh sự cố
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Người dân gửi phản ánh sự cố với thông tin chi tiết về vị trí, 
-                    loại sự cố và mức độ nghiêm trọng. AI tự động nhận dạng và phân loại.
-                  </p>
-                </div>
-              </div>
+                return (
+                  <div
+                    key={step.number}
+                    className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2"
+                  >
+                    <div
+                      className={`${
+                        isLeftAligned ? "lg:text-right" : "lg:order-2"
+                      }`}
+                    >
+                      <div
+                        className={`inline-flex items-center gap-3 p-4 mb-4 rounded-lg bg-gradient-to-r ${step.highlight}`}
+                      >
+                        <span className="text-2xl font-bold text-primary dark:text-primary/80">
+                          {step.number}
+                        </span>
+                        <Icon className="w-6 h-6 text-primary dark:text-primary/80" />
+                      </div>
+                      <h3 className="mb-3 text-2xl font-semibold text-gray-900 dark:text-white">
+                        {step.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {step.description}
+                      </p>
+                    </div>
 
-              {/* Step 3 */}
-              <div className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2">
-                <div className="lg:text-right">
-                  <div className="inline-block p-4 mb-4 rounded-lg bg-primary/10 dark:bg-primary/20">
-                    <span className="text-2xl font-bold text-primary dark:text-primary/80">
-                      03
-                    </span>
+                    <div
+                      className={`relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 ${
+                        isLeftAligned ? "lg:ml-12" : "lg:mr-12 lg:order-1"
+                      }`}
+                    >
+                      <div
+                        className={`absolute ${
+                          isLeftAligned ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
+                        } top-1/2 hidden h-4 w-4 -translate-y-1/2 rounded-full bg-primary lg:block`}
+                      />
+                      <div className="aspect-video rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 dark:from-primary/20 dark:to-primary/5 flex items-center justify-center">
+                        <Icon className="w-12 h-12 text-primary dark:text-primary/70" />
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="mb-3 text-2xl font-semibold text-gray-900 dark:text-white">
-                    Xử lý & Giải quyết
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Cán bộ và quản trị viên xem phản ánh, phân công xử lý và 
-                    thực hiện giải quyết sự cố. Mọi hoạt động được ghi blockchain.
-                  </p>
-                </div>
-                <div className="relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 lg:ml-12">
-                  <div className="absolute left-0 w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-primary hidden lg:block"></div>
-                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/30 dark:from-primary/20 dark:to-primary/30 rounded-xl"></div>
-                </div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2">
-                <div className="relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 lg:mr-12 lg:order-1">
-                  <div className="absolute right-0 w-4 h-4 transform translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 bg-blue-light-500 hidden lg:block"></div>
-                  <div className="aspect-video bg-gradient-to-br from-blue-light-100 to-blue-light-200 dark:from-blue-light-900/20 dark:to-blue-light-800/20 rounded-xl"></div>
-                </div>
-                <div className="lg:order-2">
-                  <div className="inline-block p-4 mb-4 rounded-lg bg-blue-light-100 dark:bg-blue-light-500/10">
-                    <span className="text-2xl font-bold text-blue-light-500 dark:text-blue-light-400">
-                      04
-                    </span>
-                  </div>
-                  <h3 className="mb-3 text-2xl font-semibold text-gray-900 dark:text-white">
-                    Theo dõi & Báo cáo
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Tất cả bên liên quan có thể theo dõi tiến độ xử lý thời gian thực, 
-                    xem báo cáo thống kê và kiểm tra tính minh bạch qua blockchain.
-                  </p>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -552,6 +552,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      
 
       {/* CTA Section */}
       <section className="relative py-20 overflow-hidden sm:py-32">

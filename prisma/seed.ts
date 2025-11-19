@@ -186,9 +186,13 @@ async function main() {
     const statuses = ['cho_xu_ly', 'dang_xu_ly', 'da_hoan_tat'];
     const status = statuses[Math.floor(i / 3) % statuses.length];
 
+    const assignedOfficer =
+      status === "cho_xu_ly" ? null : officers[i % officers.length];
+
     const phanAnh = await prisma.phanAnh.create({
       data: {
         nguoi_dung_id: citizen.id,
+        can_bo_id: assignedOfficer?.id ?? null,
         tieu_de: report.title,
         mo_ta: report.description,
         loai_su_co: report.type,
@@ -299,6 +303,27 @@ async function main() {
   }
 
   console.log(`🔔 Created ${notificationCount} notifications`);
+
+  // Create staff notifications
+  for (const officer of officers) {
+    await prisma.thongBao.create({
+      data: {
+        nguoi_dung_id: officer.id,
+        tieu_de: "Nhiệm vụ mới được giao",
+        noi_dung: "Bạn vừa nhận nhiệm vụ xử lý phản ánh ưu tiên cao.",
+        da_doc: false,
+      },
+    });
+    await prisma.thongBao.create({
+      data: {
+        nguoi_dung_id: officer.id,
+        tieu_de: "Nhắc cập nhật minh chứng",
+        noi_dung: "Vui lòng tải minh chứng mới nhất cho phản ánh đang xử lý.",
+        da_doc: Math.random() > 0.5,
+      },
+    });
+    notificationCount += 2;
+  }
 
   // Create ratings/reviews (LichSuDanhGia)
   let ratingCount = 0;

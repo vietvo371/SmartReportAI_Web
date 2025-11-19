@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 // PUT /api/users/{id} - Update user profile
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const token = req.cookies.get("token")?.value;
@@ -19,10 +19,13 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = parseInt(params.id);
+    const resolvedParams = await Promise.resolve(params);
+    const userId = parseInt(resolvedParams.id, 10);
     
     // Users can only update their own profile
-    if (payload.id !== userId && payload.vai_tro !== "quan_tri") {
+    const requesterId = (payload as any).id ?? (payload as any).userId;
+
+    if (requesterId !== userId && payload.vai_tro !== "quan_tri") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -20,6 +20,7 @@ model NguoiDung {
   dia_chi      String?
   avatar_url   String?
   phan_anhs    PhanAnh[]
+  phan_anhs_phu_trach PhanAnh[] @relation("PhanAnhAssignedOfficer")
   thong_baos   ThongBao[]
   tokens       Token[]
   lich_su_danh_gias LichSuDanhGia[]
@@ -32,6 +33,7 @@ model NguoiDung {
 model PhanAnh {
   id                Int      @id @default(autoincrement())
   nguoi_dung_id     Int
+  can_bo_id         Int?
   tieu_de           String
   mo_ta             String?
   loai_su_co        String // (pothole, flooding, traffic_light,waste,traffic_jam,other)
@@ -46,6 +48,7 @@ model PhanAnh {
   blockchain_logs   BlockchainLog[]
   lich_su_danh_gias LichSuDanhGia[]
   nguoi_dung        NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
+  can_bo            NguoiDung? @relation("PhanAnhAssignedOfficer", fields: [can_bo_id], references: [id])
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 }

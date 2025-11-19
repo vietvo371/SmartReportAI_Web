@@ -38,7 +38,7 @@ const StaffSidebar: React.FC = () => {
               href={item.href}
               className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
                 isActive(item.href)
-                  ? "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-500"
+                 ? "bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-500"
                   : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               }`}
             >

@@ -37,6 +37,7 @@ export default function ReportsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<any>(null);
   const [editForm, setEditForm] = useState({ trang_thai: 'cho_xu_ly', muc_do_nghiem_trong: '3', assign_can_bo_id: '', ghi_chu: '' });
+  const [editFile, setEditFile] = useState<File | null>(null);
   const [deletePopoverId, setDeletePopoverId] = useState<number | null>(null); // legacy popover (will be removed)
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
@@ -823,20 +824,71 @@ export default function ReportsPage() {
                 value={editForm.ghi_chu}
                 onChange={(e) => setEditForm({ ...editForm, ghi_chu: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                rows={3}
               />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Cập nhật hình ảnh minh chứng</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setEditFile(file);
+                }} 
+                className="block w-full text-sm text-gray-600 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 dark:file:bg-brand-900/20 dark:file:text-brand-300"
+              />
+              {editFile && (
+                <div className="mt-2">
+                  <img src={URL.createObjectURL(editFile)} alt="preview" className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ảnh mới sẽ thay thế ảnh hiện tại.</p>
+                </div>
+              )}
+              {!editFile && (editTarget as any)?.hinh_anh_url && (
+                <div className="mt-2">
+                  <img src={(editTarget as any).hinh_anh_url} alt="current" className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ảnh hiện tại</p>
+                </div>
+              )}
             </div>
           </div>
           <div className="mt-6 flex items-center justify-end gap-3">
-            <button onClick={() => setEditOpen(false)} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600">Đóng</button>
+            <button onClick={() => {
+              setEditOpen(false);
+              setEditFile(null);
+            }} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600">Đóng</button>
             <button
               onClick={async () => {
                 if (!editTarget) return;
-                const payload: any = {};
-                if (editForm.assign_can_bo_id) payload.assign_can_bo_id = Number(editForm.assign_can_bo_id);
-                if (editForm.ghi_chu) payload.ghi_chu = editForm.ghi_chu;
-                if (editForm.muc_do_nghiem_trong) payload.muc_do_nghiem_trong = Number(editForm.muc_do_nghiem_trong);
-                await updateReport((editTarget as any).id, payload);
-                setEditOpen(false);
+                try {
+                  const payload: any = {};
+                  
+                  // Upload new image if selected
+                  if (editFile) {
+                    const fd = new FormData();
+                    fd.append('file', editFile);
+                    fd.append('folder', 'reports');
+                    const up = await fetch('/api/upload', { method: 'POST', body: fd });
+                    if (!up.ok) {
+                      let msg = `HTTP ${up.status}`;
+                      try { const j = await up.json(); if (j?.error) msg = j.error; } catch {}
+                      throw new Error(`Upload thất bại: ${msg}`);
+                    }
+                    const upJson = await up.json();
+                    payload.hinh_anh_url = upJson.url;
+                  }
+                  
+                  if (editForm.assign_can_bo_id) payload.assign_can_bo_id = Number(editForm.assign_can_bo_id);
+                  if (editForm.ghi_chu) payload.ghi_chu = editForm.ghi_chu;
+                  if (editForm.muc_do_nghiem_trong) payload.muc_do_nghiem_trong = Number(editForm.muc_do_nghiem_trong);
+                  
+                  await updateReport((editTarget as any).id, payload);
+                  setEditOpen(false);
+                  setEditFile(null);
+                } catch (e: any) {
+                  console.error(e);
+                  toastError(`Cập nhật thất bại: ${e?.message || 'Không rõ lỗi'}`);
+                }
               }}
               className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white"
             >

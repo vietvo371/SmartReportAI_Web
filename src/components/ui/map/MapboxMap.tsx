@@ -73,11 +73,12 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/standard',
+      // style: 'mapbox://styles/mapbox/streets-v12',
       center: center,
-      zoom: zoom,
-      pitch: 0,
-      bearing: 0,
+      zoom: 18,
+      pitch: 35,
+      bearing: -15,
       antialias: true
     });
 

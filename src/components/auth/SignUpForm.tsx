@@ -94,17 +94,17 @@ export default function SignUpForm() {
           className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
         >
           <ChevronLeftIcon />
-          Back to home
+          Quay lại trang chủ
         </Link>
       </div>
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Sign Up
+              Đăng ký tài khoản
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign up!
+              Điền thông tin để tạo tài khoản SmartReportAI
             </p>
           </div>
           <div>
@@ -134,7 +134,7 @@ export default function SignUpForm() {
                     fill="#EB4335"
                   />
                 </svg>
-                Sign up with Google
+                Đăng ký với Google
               </button>
               <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                 <svg
@@ -147,7 +147,7 @@ export default function SignUpForm() {
                 >
                   <path d="M15.6705 1.875H18.4272L12.4047 8.75833L19.4897 18.125H13.9422L9.59717 12.4442L4.62554 18.125H1.86721L8.30887 10.7625L1.51221 1.875H7.20054L11.128 7.0675L15.6705 1.875ZM14.703 16.475H16.2305L6.37054 3.43833H4.73137L14.703 16.475Z" />
                 </svg>
-                Sign up with X
+                Đăng ký với X
               </button>
             </div>
             <div className="relative py-3 sm:py-5">
@@ -156,7 +156,7 @@ export default function SignUpForm() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
-                  Or
+                  Hoặc
                 </span>
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function SignUpForm() {
               <div className="space-y-5">
                 <div>
                   <Label>
-                    Full Name<span className="text-error-500">*</span>
+                    Họ và tên<span className="text-error-500">*</span>
                   </Label>
                   <Input
                     type="text"
@@ -178,34 +178,34 @@ export default function SignUpForm() {
 
                 <div>
                   <Label>
-                    Phone Number<span className="text-error-500">*</span>
+                    Số điện thoại<span className="text-error-500">*</span>
                   </Label>
                   <Input
                     type="tel"
                     name="so_dien_thoai"
                     value={formData.so_dien_thoai}
                     onChange={handleInputChange}
-                    placeholder="Enter your phone number"
+                    placeholder="Nhập số điện thoại"
                     required
                   />
                 </div>
 
                 <div>
                   <Label>
-                    Address
+                    Địa chỉ
                   </Label>
                   <Input
                     type="text"
                     name="dia_chi"
                     value={formData.dia_chi}
                     onChange={handleInputChange}
-                    placeholder="Enter your address (optional)"
+                    placeholder="Nhập địa chỉ (không bắt buộc)"
                   />
                 </div>
 
                 <div>
                   <Label>
-                    Role<span className="text-error-500">*</span>
+                    Vai trò<span className="text-error-500">*</span>
                   </Label>
                   <select
                     name="vai_tro"
@@ -228,21 +228,21 @@ export default function SignUpForm() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="Enter your email"
+                    placeholder="Nhập email của bạn"
                     required
                   />
                 </div>
 
                 <div>
                   <Label>
-                    Password<span className="text-error-500">*</span>{" "}
+                    Mật khẩu<span className="text-error-500">*</span>{" "}
                   </Label>
                   <div className="relative">
                     <Input
                       name="mat_khau"
                       value={formData.mat_khau}
                       onChange={handleInputChange}
-                      placeholder="Enter your password"
+                      placeholder="Nhập mật khẩu"
                       type={showPassword ? "text" : "password"}
                       required
                     />
@@ -266,14 +266,14 @@ export default function SignUpForm() {
                     onChange={setIsChecked}
                   />
                   <p className="inline-block font-normal text-gray-500 dark:text-gray-400">
-                    By creating an account, you agree to our{" "}
+                    Bằng việc tạo tài khoản, bạn đồng ý với{" "}
                     <span className="text-gray-800 dark:text-white/90">
-                      Terms of Service
+                      Điều khoản dịch vụ
                     </span>{" "}
                     và{" "}
                     <span className="text-gray-800 dark:text-white">
-                      Privacy Policy
-                    </span>
+                      Chính sách bảo mật
+                    </span>{" "}
                   </p>
                 </div>
                 {/* <!-- Button --> */}
@@ -283,7 +283,7 @@ export default function SignUpForm() {
                     disabled={loading}
                     className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? "Đang xử lý..." : "Đăng ký"}
+                    {loading ? "Đang xử lý..." : "Hoàn tất đăng ký"}
                   </button>
                 </div>
               </div>
@@ -291,12 +291,12 @@ export default function SignUpForm() {
 
             <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Already have an account?
+                Bạn đã có tài khoản?{" "}
                 <Link
                   href="/login"
                   className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
                 >
-                  Sign In
+                  Đăng nhập ngay
                 </Link>
               </p>
             </div>
