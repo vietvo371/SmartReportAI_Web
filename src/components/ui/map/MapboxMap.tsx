@@ -73,13 +73,18 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/standard',
-      // style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/streets-v12',
       center: center,
       zoom: 18,
       pitch: 35,
       bearing: -15,
       antialias: true
+    });
+
+    // Handle map errors (e.g., model loading errors)
+    map.current.on('error', (e) => {
+      console.warn('Mapbox error:', e.error?.message || 'Unknown map error');
+      // Prevent errors from breaking the map
     });
 
     map.current.on('load', () => {

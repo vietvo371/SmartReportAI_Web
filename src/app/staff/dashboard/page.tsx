@@ -287,27 +287,30 @@ export default function StaffDashboard() {
             {data.recentTasks.map((task) => {
               const config = statusConfig[task.trang_thai] ?? statusConfig["cho_xu_ly"];
               return (
-                <div
+                <Link
                   key={task.id}
-                  className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
+                  href={`/staff/reports/${task.id}`}
+                  className="block rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
                 >
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {task.tieu_de}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {config.label} • Cập nhật {formatUpdatedAt(task.updated_at)}
-                    </p>
-                    {task.dia_chi && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                        {task.dia_chi}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {task.tieu_de}
                       </p>
-                    )}
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {config.label} • Cập nhật {formatUpdatedAt(task.updated_at)}
+                      </p>
+                      {task.dia_chi && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                          {task.dia_chi}
+                        </p>
+                      )}
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.badge}`}>
+                      {config.label}
+                    </span>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.badge}`}>
-                    {config.label}
-                  </span>
-                </div>
+                </Link>
               );
             })}
           </div>

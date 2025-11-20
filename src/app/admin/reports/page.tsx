@@ -51,9 +51,11 @@ export default function ReportsPage() {
     loai_su_co: "pothole",
     vi_do: "",
     kinh_do: "",
+    dia_chi: "",
     hinh_anh_url: "",
     muc_do_nghiem_trong: "3",
   });
+  const [isResolvingAddress, setIsResolvingAddress] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const mapRef = useRef<any>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -100,8 +102,8 @@ export default function ReportsPage() {
       (mapboxgl as any).accessToken = token;
       const container = document.getElementById('detail-map');
       if (!container) return;
-      const lat = (detailTarget as any).vi_do ?? 10.762622;
-      const lng = (detailTarget as any).kinh_do ?? 106.660172;
+      const lat = (detailTarget as any).vi_do ?? 16.0544;
+      const lng = (detailTarget as any).kinh_do ?? 108.2022;
       const map = new mapboxgl.Map({ container, style: 'mapbox://styles/mapbox/streets-v12', center: [lng, lat], zoom: 12 });
       map.on('load', () => {
         new mapboxgl.Marker({ color: '#2563eb' }).setLngLat([lng, lat]).addTo(map);
@@ -154,6 +156,7 @@ export default function ReportsPage() {
         loai_su_co: form.loai_su_co.trim(),
         vi_do: Number(form.vi_do),
         kinh_do: Number(form.kinh_do),
+        dia_chi: form.dia_chi.trim() || null,
         hinh_anh_url: form.hinh_anh_url.trim() || null,
         muc_do_nghiem_trong: Number(form.muc_do_nghiem_trong),
       };
@@ -183,7 +186,7 @@ export default function ReportsPage() {
       }
       await fetchReports();
       setCreateOpen(false);
-      setForm({ nguoi_dung_id: "", tieu_de: "", mo_ta: "", loai_su_co: "pothole", vi_do: "", kinh_do: "", hinh_anh_url: "", muc_do_nghiem_trong: "3" });
+      setForm({ nguoi_dung_id: "", tieu_de: "", mo_ta: "", loai_su_co: "pothole", vi_do: "", kinh_do: "", dia_chi: "", hinh_anh_url: "", muc_do_nghiem_trong: "3" });
       setSelectedFile(null);
       success("Tạo sự cố thành công");
     } catch (e: any) {
@@ -211,7 +214,6 @@ export default function ReportsPage() {
   };
 
   const deleteReport = async (id: number) => {
-    if (!confirm('Xóa sự cố này?')) return;
     try {
       const res = await fetch(`/api/admin/reports?id=${id}`, { method: 'DELETE' });
       if (!res.ok) {
@@ -227,6 +229,69 @@ export default function ReportsPage() {
     }
   };
 
+  const formatAddressFromNominatim = (address: Record<string, any>) => {
+    if (!address) return "";
+
+    const street =
+      address.road ||
+      address.residential ||
+      address.neighbourhood ||
+      address.quarter ||
+      address.hamlet ||
+      address.village ||
+      address.name;
+
+    const ward =
+      address.suburb ||
+      address.city_district ||
+      address.district ||
+      address.township ||
+      address.county ||
+      address.town ||
+      address.village;
+
+    const city =
+      address.city ||
+      address.town ||
+      address.municipality ||
+      address.state ||
+      address.region;
+
+    const components = [street, ward, city].filter(Boolean);
+    return components.join(", ");
+  };
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      setIsResolvingAddress(true);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            "Accept-Language": "vi",
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Reverse geocoding failed");
+      const data = await response.json();
+      const diaChi =
+        data.display_name
+        "";
+      setForm((prev) => ({
+        ...prev,
+        dia_chi: diaChi,
+      }));
+    } catch (error) {
+      console.warn("Reverse geocoding error:", error);
+      setForm((prev) => ({
+        ...prev,
+        dia_chi: "",
+      }));
+    } finally {
+      setIsResolvingAddress(false);
+    }
+  };
+
   // Init mini Mapbox picker when modal opens
   useEffect(() => {
     if (!createOpen) return;
@@ -238,7 +303,7 @@ export default function ReportsPage() {
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [106.660172, 10.762622],
+        center: [108.2022, 16.0544],
         zoom: 11,
       });
       mapRef.current.on('load', () => {
@@ -247,7 +312,7 @@ export default function ReportsPage() {
           try { mapRef.current?.resize(); } catch {}
         });
       });
-      mapRef.current.on('click', (e: any) => {
+      mapRef.current.on('click', async (e: any) => {
         const { lng, lat } = e.lngLat;
         setForm((prev) => ({ ...prev, vi_do: String(lat), kinh_do: String(lng) }));
         // Simple colored marker for reliability
@@ -255,6 +320,7 @@ export default function ReportsPage() {
           markerRef.current = new mapboxgl.Marker({ color: '#10B981' });
         }
         markerRef.current.setLngLat([lng, lat]).addTo(mapRef.current);
+        await reverseGeocode(lat, lng);
       });
     })();
     return () => {
@@ -492,16 +558,23 @@ export default function ReportsPage() {
                     </p>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {(() => {
-                        const lat = (report as any).vi_do as number | undefined;
-                        const lng = (report as any).kinh_do as number | undefined;
-                        if (typeof lat === 'number' && typeof lng === 'number') {
-                          return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                        }
-                        return (report as any).vi_tri || "—";
-                      })()}
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 mt-1 shrink-0" />
+                      <div className="space-y-1">
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                          {(report as any).dia_chi || (report as any).vi_tri || "—"}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {(() => {
+                            const lat = (report as any).vi_do as number | undefined;
+                            const lng = (report as any).kinh_do as number | undefined;
+                            if (typeof lat === 'number' && typeof lng === 'number') {
+                              return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                            }
+                            return "Chưa có tọa độ";
+                          })()}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -637,7 +710,7 @@ export default function ReportsPage() {
               <div className="md:col-span-2">
                 <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">Chọn vị trí trên bản đồ (click để đặt điểm)</label>
                 <div ref={mapContainerRef} className="w-full h-64 rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden" />
-                <div className="mt-2 grid grid-cols-2 gap-3">
+                <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Vĩ độ</label>
                     <input value={form.vi_do} readOnly className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300" />
@@ -646,6 +719,26 @@ export default function ReportsPage() {
                     <label className="block text-xs text-gray-500 mb-1">Kinh độ</label>
                     <input value={form.kinh_do} readOnly className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300" />
                   </div>
+                  <div className="flex flex-col justify-end">
+                    <span className="text-xs text-gray-500 mb-1">Trạng thái địa chỉ</span>
+                    <span className="text-xs text-gray-700 dark:text-gray-300">
+                      {form.dia_chi
+                        ? "Đã lấy địa chỉ"
+                        : isResolvingAddress
+                        ? "Đang xác định địa chỉ..."
+                        : "Chưa có địa chỉ"}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Địa chỉ (tự động)</label>
+                  <textarea
+                    value={form.dia_chi}
+                    onChange={(e) => setForm((prev) => ({ ...prev, dia_chi: e.target.value }))}
+                    placeholder="Địa chỉ sẽ được điền khi bạn chọn vị trí trên bản đồ"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    rows={2}
+                  />
                 </div>
               </div>
               <div>
@@ -726,7 +819,18 @@ export default function ReportsPage() {
                 </div>
                 <div className="space-y-2">
                   <div className="text-gray-500">Vị trí</div>
-                  <div className="font-medium">{(() => { const lat=(detailTarget as any).vi_do; const lng=(detailTarget as any).kinh_do; return (typeof lat==='number'&&typeof lng==='number')?`${lat.toFixed(5)}, ${lng.toFixed(5)}`:'—'; })()}</div>
+                  <div className="space-y-1">
+                    <div className="font-medium">{(detailTarget as any).dia_chi || "—"}</div>
+                    <div className="text-sm text-gray-500">
+                      {(() => {
+                        const lat = (detailTarget as any).vi_do;
+                        const lng = (detailTarget as any).kinh_do;
+                        return typeof lat === 'number' && typeof lng === 'number'
+                          ? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                          : "Chưa có tọa độ";
+                      })()}
+                    </div>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="text-gray-500">Người báo cáo</div>

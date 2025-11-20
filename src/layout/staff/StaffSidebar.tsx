@@ -17,7 +17,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { name: "Trang chủ", href: "/staff/dashboard", icon: Home },
   { name: "Nhiệm vụ được giao", href: "/staff/assigned-tasks", icon: List },
-  { name: "Đang xử lý", href: "/staff/in-progress", icon: CheckCircle },
+  // { name: "Đang xử lý", href: "/staff/in-progress", icon: CheckCircle },
   { name: "Upload minh chứng", href: "/staff/upload-evidence", icon: Camera },
   { name: "Thống kê cá nhân", href: "/staff/statistics", icon: BarChart3 },
   { name: "Thông báo", href: "/staff/notifications", icon: Bell },

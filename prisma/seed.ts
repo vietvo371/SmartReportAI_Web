@@ -198,6 +198,7 @@ async function main() {
         loai_su_co: report.type,
         vi_do: location.lat + (Math.random() - 0.5) * 0.01,
         kinh_do: location.lng + (Math.random() - 0.5) * 0.01,
+        dia_chi: location.district_name,
         hinh_anh_url: cardImages[i % cardImages.length],
         muc_do_nghiem_trong: report.severity,
         trang_thai: status,

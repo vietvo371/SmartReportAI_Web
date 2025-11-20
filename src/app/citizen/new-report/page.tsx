@@ -18,11 +18,12 @@ interface ReportForm {
 }
 
 const ISSUE_TYPES = [
-  { value: "thoi_tiet", label: "Thời tiết xấu" },
-  { value: "moi_truong", label: "Ô nhiễm môi trường" },
-  { value: "thien_tai", label: "Thảm họa tự nhiên" },
-  { value: "tai_nan", label: "Tai nạn giao thông" },
-  { value: "khac", label: "Khác" },
+  { value: "pothole", label: "Ổ gà" },
+  { value: "flooding", label: "Ngập lụt" },
+  { value: "traffic_light", label: "Đèn giao thông" },
+  { value: "waste", label: "Rác thải" },
+  { value: "traffic_jam", label: "Kẹt xe" },
+  { value: "other", label: "Khác" },
 ];
 
 export default function NewReportPage() {
@@ -36,11 +37,13 @@ export default function NewReportPage() {
   const mapRef = useRef<any>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const markerRef = useRef<any>(null);
+  const mapboxglRef = useRef<any>(null);
+  const [isResolvingAddress, setIsResolvingAddress] = useState(false);
 
   const [form, setForm] = useState<ReportForm>({
     tieu_de: "",
     mo_ta: "",
-    loai_su_co: "",
+    loai_su_co: "pothole",
     vi_do: 0,
     kinh_do: 0,
     muc_do_nghiem_trong: 3,
@@ -48,18 +51,87 @@ export default function NewReportPage() {
     dia_chi: "",
   });
 
+  const formatAddressFromNominatim = (address: Record<string, any>) => {
+    if (!address) return "";
+
+    const street =
+      address.road ||
+      address.residential ||
+      address.neighbourhood ||
+      address.quarter ||
+      address.hamlet ||
+      address.village ||
+      address.pedestrian ||
+      address.path ||
+      address.name;
+
+    const ward =
+      address.suburb ||
+      address.city_district ||
+      address.district ||
+      address.township ||
+      address.county ||
+      address.town ||
+      address.village;
+
+    const city =
+      address.city ||
+      address.town ||
+      address.province ||
+      address.state_district ||
+      address.municipality ||
+      address.state ||
+      address.region;
+
+    const parts = [street, ward, city].filter(Boolean);
+    return Array.from(new Set(parts)).join(", ");
+  };
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      setIsResolvingAddress(true);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            "Accept-Language": "vi",
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Reverse geocoding failed");
+      const data = await response.json();
+      const dia_chi =
+         data.display_name || "";
+      setForm((prev) => ({
+        ...prev,
+        dia_chi,
+      }));
+      return dia_chi;
+    } catch (err) {
+      console.error("Reverse geocoding error:", err);
+      setForm((prev) => ({
+        ...prev,
+        dia_chi: "",
+      }));
+      return "";
+    } finally {
+      setIsResolvingAddress(false);
+    }
+  };
+
   // Initialize Mapbox with current location
   useEffect(() => {
     (async () => {
       const mapboxgl = (await import("mapbox-gl")).default;
+      mapboxglRef.current = mapboxgl;
       const token =
         process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
         "pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw";
       (mapboxgl as any).accessToken = token;
       if (!mapContainerRef.current) return;
 
-      let initialLng = 106.660172; // Default HCM
-      let initialLat = 10.762622;
+      let initialLng = 108.2022; // Default Đà Nẵng
+      let initialLat = 16.0544;
 
       // Get user's current location
       if ("geolocation" in navigator) {
@@ -83,7 +155,7 @@ export default function NewReportPage() {
         zoom: 14,
       });
 
-      mapRef.current.on("load", () => {
+      mapRef.current.on("load", async () => {
         requestAnimationFrame(() => {
           try {
             mapRef.current?.resize();
@@ -102,30 +174,7 @@ export default function NewReportPage() {
           kinh_do: initialLng,
         }));
 
-        // Reverse geocoding for initial location
-        (async () => {
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${initialLat}&lon=${initialLng}`,
-              {
-                headers: {
-                  "Accept-Language": "vi",
-                },
-              }
-            );
-            if (response.ok) {
-              const data = await response.json();
-              const dia_chi =
-                data.address?.name || data.display_name || "";
-              setForm((prev) => ({
-                ...prev,
-                dia_chi,
-              }));
-            }
-          } catch (err) {
-            console.error("Reverse geocoding error:", err);
-          }
-        })();
+        await reverseGeocode(initialLat, initialLng);
       });
 
       // Click to select location
@@ -143,28 +192,7 @@ export default function NewReportPage() {
         }
         markerRef.current.setLngLat([lng, lat]).addTo(mapRef.current);
 
-        // Reverse geocoding
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-            {
-              headers: {
-                "Accept-Language": "vi",
-              },
-            }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            const dia_chi =
-              data.address?.name || data.display_name || "";
-            setForm((prev) => ({
-              ...prev,
-              dia_chi,
-            }));
-          }
-        } catch (err) {
-          console.error("Reverse geocoding error:", err);
-        }
+        reverseGeocode(lat, lng);
       });
     })();
 
@@ -232,42 +260,27 @@ export default function NewReportPage() {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
 
-          try {
-            // Gọi OpenStreetMap Nominatim API để lấy tên địa chỉ
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-              {
-                headers: {
-                  "Accept-Language": "vi",
-                },
-              }
-            );
+          setForm((prev) => ({
+            ...prev,
+            vi_do: lat,
+            kinh_do: lng,
+          }));
 
-            let dia_chi = "";
-            if (response.ok) {
-              const data = await response.json();
-              dia_chi = data.address?.name || data.display_name || "";
-            }
-
-            setForm((prev) => ({
-              ...prev,
-              vi_do: lat,
-              kinh_do: lng,
-              dia_chi,
-            }));
-            showSuccess("Đã lấy vị trí hiện tại: " + (dia_chi || ""));
-          } catch (err) {
-            console.error("Reverse geocoding error:", err);
-            // Vẫn lưu tọa độ ngay cả khi lấy địa chỉ thất bại
-            setForm((prev) => ({
-              ...prev,
-              vi_do: lat,
-              kinh_do: lng,
-            }));
-            showSuccess("Đã lấy tọa độ hiện tại");
-          } finally {
-            setIsGettingLocation(false);
+          if (markerRef.current) {
+            markerRef.current.setLngLat([lng, lat]);
+          } else if (mapRef.current && mapboxglRef.current) {
+            markerRef.current = new mapboxglRef.current.Marker({
+              color: "#10B981",
+            })
+              .setLngLat([lng, lat])
+              .addTo(mapRef.current);
           }
+
+          const diaChi = await reverseGeocode(lat, lng);
+          showSuccess(
+            "Đã lấy vị trí hiện tại" + (diaChi ? `: ${diaChi}` : "")
+          );
+          setIsGettingLocation(false);
         },
         () => {
           setIsGettingLocation(false);
@@ -448,28 +461,21 @@ export default function NewReportPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Mức độ nghiêm trọng
               </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  name="muc_do_nghiem_trong"
-                  min="1"
-                  max="5"
-                  value={form.muc_do_nghiem_trong}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  className="flex-1"
-                />
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {form.muc_do_nghiem_trong}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    /5
-                  </span>
-                </div>
-              </div>
+              <select
+                name="muc_do_nghiem_trong"
+                value={form.muc_do_nghiem_trong}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 disabled:opacity-50 dark:border-white/[0.12] dark:bg-gray-800 dark:text-white"
+              >
+                <option value={1}>1 - Thấp</option>
+                <option value={2}>2 - Trung bình</option>
+                <option value={3}>3 - Cao (AI đề xuất)</option>
+                <option value={4}>4 - Rất cao</option>
+                <option value={5}>5 - Khẩn cấp</option>
+              </select>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                1: Thấp | 5: Khẩn cấp
+                Chọn mức độ nghiêm trọng trùng với quy ước của quản trị viên.
               </p>
             </div>
           </div>
@@ -512,17 +518,7 @@ export default function NewReportPage() {
               )}
             </button>
 
-            {/* Hiển thị địa chỉ */}
-            {form.dia_chi && (
-              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30">
-                <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">Địa chỉ:</p>
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-100 line-clamp-2">
-                  {form.dia_chi}
-                </p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Vĩ độ *
@@ -553,6 +549,32 @@ export default function NewReportPage() {
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 disabled:opacity-50 dark:border-white/[0.12] dark:bg-gray-800 dark:text-white"
                 />
               </div>
+              <div className="flex flex-col justify-end">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Trạng thái địa chỉ
+                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                  {isResolvingAddress
+                    ? "Đang xác định địa chỉ..."
+                    : form.dia_chi
+                    ? "Đã lấy địa chỉ"
+                    : "Chưa có địa chỉ"}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Địa chỉ (tự động, có thể chỉnh sửa)
+              </label>
+              <textarea
+                name="dia_chi"
+                value={form.dia_chi}
+                onChange={handleInputChange}
+                placeholder="Địa chỉ sẽ được điền sau khi chọn vị trí trên bản đồ"
+                rows={3}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 disabled:opacity-50 dark:border-white/[0.12] dark:bg-gray-800 dark:text-white"
+              />
             </div>
           </div>
         </div>

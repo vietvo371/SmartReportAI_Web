@@ -209,8 +209,7 @@ export async function POST(req: NextRequest) {
         loai_su_co: loai_su_co.trim(),
         vi_do,
         kinh_do,
-        // dia_chi will be added after migration
-        // dia_chi,
+        dia_chi: dia_chi?.trim() || null,
         hinh_anh_url,
         muc_do_nghiem_trong,
         trang_thai,
