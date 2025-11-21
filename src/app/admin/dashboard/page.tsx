@@ -8,6 +8,7 @@ import AIStatsComponent from "@/components/admin/AIStats";
 import ProcessingTable from "@/components/admin/ProcessingTable";
 import QuickActions from "@/components/admin/QuickActions";
 import MapDebugger from "@/components/admin/MapDebugger";
+import AITestPanel from "@/components/admin/AITestPanel";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Report, Process, AIStats } from "@/types/report";
 
@@ -103,6 +104,9 @@ export default function DashboardPage() {
 
       {/* AI Stats */}
       <AIStatsComponent stats={aiStats} />
+
+      {/* AI Test Panel - New Addition */}
+      <AITestPanel />
 
       {/* Quick Actions */}
       <QuickActions />

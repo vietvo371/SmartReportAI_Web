@@ -19,6 +19,14 @@ model NguoiDung {
   vai_tro      String   // nguoi_dan, can_bo, quan_tri
   dia_chi      String?
   avatar_url   String?
+  
+  // AI-related fields for staff
+  skills       String[] @default([])  // Array of skills for AI matching
+  current_workload Int @default(0)     // Current number of active assignments
+  location_lat Float?                  // Staff location for proximity matching
+  location_lng Float?
+  ai_performance_score Float @default(75.0) // AI-calculated performance score
+  
   phan_anhs    PhanAnh[]
   phan_anhs_phu_trach PhanAnh[] @relation("PhanAnhAssignedOfficer")
   thong_baos   ThongBao[]
@@ -26,6 +34,7 @@ model NguoiDung {
   lich_su_danh_gias LichSuDanhGia[]
   xu_lys       XuLy[]
   ai_analyses  AiAnalysis[]
+  notifications Notification[]
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 }
@@ -42,11 +51,26 @@ model PhanAnh {
   dia_chi           String?
   hinh_anh_url      String?
   muc_do_nghiem_trong Int  // (1,2,3,4,5)
-  trang_thai        String   // cho_xu_ly, dang_xu_ly, da_hoan_tat
+  trang_thai        String   // cho_xu_ly, da_phan_cong, dang_xu_ly, da_hoan_tat
+  
+  // AI Integration Fields
+  ai_classification     String?   // AI predicted incident type
+  ai_confidence         Float?    // AI confidence score (0.0 - 1.0)
+  ai_description        String?   // AI generated description
+  user_original_choice  String?   // Original user choice before AI suggestion
+  ai_severity          String?   // AI assessed severity
+  ai_processing_time_ms Int?     // Time taken for AI processing
+  
+  // Auto-assignment fields
+  ai_priority_score    Int?      // AI calculated priority (0-100)
+  ai_estimated_hours   Float?    // AI estimated completion time
+  auto_assigned        Boolean @default(false) // Whether assigned by AI
+  
   ai_nhan_dang      Json?
   xu_lys            XuLy[]
   blockchain_logs   BlockchainLog[]
   lich_su_danh_gias LichSuDanhGia[]
+  ai_analyses       AiAnalysis[]
   nguoi_dung        NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
   can_bo            NguoiDung? @relation("PhanAnhAssignedOfficer", fields: [can_bo_id], references: [id])
   created_at        DateTime @default(now())
@@ -58,11 +82,36 @@ model XuLy {
   phan_anh_id     Int
   can_bo_id       Int
   noi_dung        String?
-  trang_thai_moi  String
+  trang_thai      String   // cho_xu_ly, dang_xu_ly, hoan_thanh, huy_bo
+  trang_thai_moi  String?  // Legacy field
   hinh_anh_minh_chung String?
-  thoi_gian       DateTime @default(now())
-  phan_anh        PhanAnh @relation(fields: [phan_anh_id], references: [id])
-  can_bo          NguoiDung @relation(fields: [can_bo_id], references: [id])
+  
+  // Progress tracking
+  completion_percentage Int @default(0)        // % completion (0-100)
+  completion_image_url  String?              // Image proof of completion
+  ghi_chu              String?              // Staff notes
+  
+  // AI Assignment Fields
+  ai_priority_score      Int?               // AI calculated priority
+  ai_estimated_hours     Float?             // AI time estimate
+  ai_suggested_skills    String?            // Required skills (comma separated)
+  ai_assignment_reasoning String?           // Why AI chose this staff
+  
+  // AI Quality Assessment
+  ai_quality_score       Int?               // AI quality assessment (0-100)
+  ai_completion_verification String?        // AI verification message
+  timeline_status        String @default("on_time") // on_time, at_risk, delayed
+  quality_issues         String?           // Comma separated quality issues
+  
+  // Timing
+  started_at       DateTime?
+  completed_at     DateTime?
+  thoi_gian        DateTime @default(now())
+  
+  phan_anh         PhanAnh @relation(fields: [phan_anh_id], references: [id])
+  can_bo           NguoiDung @relation(fields: [can_bo_id], references: [id])
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 }
 
 model BlockchainLog {
@@ -111,16 +160,43 @@ model Token {
 model AiAnalysis {
   id                    Int      @id @default(autoincrement())
   nguoi_dung_id         Int
+  phan_anh_id           Int?     // Link to specific report
   image_url             String?
   image_base64          String?
-  predicted_label       String   // pothole, flooding, traffic_light, waste, traffic_jam
+  predicted_label       String   // pothole, flooding, traffic_light, waste, traffic_jam, other
   confidence_score      Float
   description           String?
   severity              String   // low, medium, high, critical
   suggested_priority    String   // low, medium, high, critical
-  location_hints        String[] // Array of location hints
+  location_hints        String[] @default([]) // Array of location hints
+  detected_objects      String[] @default([]) // Array of detected objects
   model_version         String
   processing_time_ms    Int
+  
+  // Debug information
+  debug_info            Json?    // Store AI debug information
+  
   nguoi_dung            NguoiDung @relation(fields: [nguoi_dung_id], references: [id])
+  phan_anh              PhanAnh? @relation(fields: [phan_anh_id], references: [id])
   created_at            DateTime @default(now())
+}
+
+// New model for system notifications and alerts
+model Notification {
+  id            Int      @id @default(autoincrement())
+  recipient_id  Int
+  type          String   // quality_alert, assignment_notification, deadline_warning
+  title         String
+  message       String
+  is_read       Boolean  @default(false)
+  related_id    Int?     // ID of related entity (xu_ly_id, phan_anh_id, etc.)
+  related_type  String?  // Type of related entity (xu_ly, phan_anh, etc.)
+  
+  // AI generated metadata
+  priority      String @default("medium") // low, medium, high, critical
+  ai_generated  Boolean @default(false)   // Whether notification was AI-generated
+  
+  recipient     NguoiDung @relation(fields: [recipient_id], references: [id])
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 }

@@ -102,7 +102,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const contentType = req.headers.get('content-type') || '';
-    let nguoi_dung_id: number; let tieu_de: string; let mo_ta: string | null | undefined; let loai_su_co: string; let vi_do: number; let kinh_do: number; let hinh_anh_url: string | null | undefined; let muc_do_nghiem_trong: number = 1; const trang_thai = "cho_xu_ly";
+    let nguoi_dung_id: number; 
+    let tieu_de: string; 
+    let mo_ta: string | null | undefined; 
+    let loai_su_co: string; 
+    let vi_do: number; 
+    let kinh_do: number; 
+    let dia_chi: string | null | undefined; // Thêm biến dia_chi
+    let hinh_anh_url: string | null | undefined; 
+    let muc_do_nghiem_trong: number = 1; 
+    const trang_thai = "cho_xu_ly";
 
     if (contentType.includes('multipart/form-data')) {
       const form = await req.formData();
@@ -112,6 +121,7 @@ export async function POST(req: NextRequest) {
       loai_su_co = String(form.get('loai_su_co') || '');
       vi_do = Number(form.get('vi_do'));
       kinh_do = Number(form.get('kinh_do'));
+      dia_chi = (form.get('dia_chi') as string) || null; // Lấy dia_chi từ form
       muc_do_nghiem_trong = Number(form.get('muc_do_nghiem_trong') || 1);
       const file = form.get('file') as File | null;
       const urlInput = (form.get('hinh_anh_url') as string) || '';
@@ -141,6 +151,7 @@ export async function POST(req: NextRequest) {
       loai_su_co = body.loai_su_co;
       vi_do = body.vi_do;
       kinh_do = body.kinh_do;
+      dia_chi = body.dia_chi; // Lấy dia_chi từ JSON body
       hinh_anh_url = body.hinh_anh_url;
       muc_do_nghiem_trong = body.muc_do_nghiem_trong ?? 1;
     }
@@ -155,7 +166,18 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'nguoi_dung_id không tồn tại' }, { status: 400 });
 
     const created = await prisma.phanAnh.create({
-      data: { nguoi_dung_id, tieu_de, mo_ta, loai_su_co, vi_do, kinh_do, hinh_anh_url, muc_do_nghiem_trong, trang_thai },
+      data: { 
+        nguoi_dung_id, 
+        tieu_de, 
+        mo_ta, 
+        loai_su_co, 
+        vi_do, 
+        kinh_do, 
+        dia_chi, // Thêm dia_chi vào data
+        hinh_anh_url, 
+        muc_do_nghiem_trong, 
+        trang_thai 
+      },
     });
 
     return NextResponse.json({ report: created }, { status: 201 });
