@@ -133,11 +133,11 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(bytes);
         const ext = (file.type && file.type.split('/') [1]) || 'jpg';
         const base = `${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'reports');
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'admin', 'reports');
         await mkdir(uploadDir, { recursive: true });
         const filePath = path.join(uploadDir, base);
         await writeFile(filePath, buffer);
-        hinh_anh_url = `/uploads/reports/${base}`;
+        hinh_anh_url = `/uploads/admin/reports/${base}`;
       } else if (urlInput) {
         hinh_anh_url = urlInput;
       } else {
@@ -220,6 +220,7 @@ export async function PATCH(req: NextRequest) {
           phan_anh_id: id,
           can_bo_id: assign_can_bo_id || payload.userId, // nếu không chỉ định thì ghi nhận bởi admin
           noi_dung: ghi_chu || null,
+          trang_thai: inferred_trang_thai || "cho_xu_ly", // Thêm trường trang_thai bắt buộc
           trang_thai_moi: inferred_trang_thai || updated.trang_thai,
         },
       });

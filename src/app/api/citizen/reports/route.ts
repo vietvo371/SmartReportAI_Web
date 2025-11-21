@@ -107,11 +107,11 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(bytes);
         const ext = (file.type && file.type.split("/")[1]) || "jpg";
         const base = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const uploadDir = path.join(process.cwd(), "public", "uploads", "reports");
+        const uploadDir = path.join(process.cwd(), "public", "uploads", "citizen", "reports");
         await mkdir(uploadDir, { recursive: true });
         const filePath = path.join(uploadDir, base);
         await writeFile(filePath, buffer);
-        hinh_anh_url = `/uploads/reports/${base}`;
+        hinh_anh_url = `/uploads/citizen/reports/${base}`;
       } else if (urlInput) {
         hinh_anh_url = urlInput;
       } else {
@@ -126,8 +126,43 @@ export async function POST(req: NextRequest) {
       vi_do = body.vi_do;
       kinh_do = body.kinh_do;
       dia_chi = body.dia_chi;
-      hinh_anh_url = body.hinh_anh_url;
       muc_do_nghiem_trong = body.muc_do_nghiem_trong ?? 3;
+      
+      // Xử lý base64 image từ JSON body
+      if (body.hinh_anh_url && body.hinh_anh_url.startsWith('data:image/')) {
+        try {
+          const { writeFile, mkdir } = await import('fs/promises');
+          const path = (await import('path')).default;
+          
+          // Parse base64 data
+          const matches = body.hinh_anh_url.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
+          if (matches && matches.length === 3) {
+            const ext = matches[1] || 'jpg';
+            const base64Data = matches[2];
+            const buffer = Buffer.from(base64Data, 'base64');
+            
+            // Generate unique filename
+            const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'citizen', 'reports');
+            await mkdir(uploadDir, { recursive: true });
+            const filePath = path.join(uploadDir, fileName);
+            
+            // Save file
+            await writeFile(filePath, buffer);
+            hinh_anh_url = `/uploads/citizen/reports/${fileName}`;
+          } else {
+            hinh_anh_url = null; // Invalid base64 format
+          }
+        } catch (error) {
+          console.error('Error saving base64 image:', error);
+          hinh_anh_url = null;
+        }
+      } else if (body.hinh_anh_url && body.hinh_anh_url.startsWith('http')) {
+        // If it's already a URL, keep it
+        hinh_anh_url = body.hinh_anh_url;
+      } else {
+        hinh_anh_url = null;
+      }
     }
 
     // Validate: người dùng chỉ có thể submit cho chính mình
