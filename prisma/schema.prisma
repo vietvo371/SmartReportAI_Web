@@ -35,6 +35,7 @@ model NguoiDung {
   xu_lys       XuLy[]
   ai_analyses  AiAnalysis[]
   notifications Notification[]
+  chat_sessions ChatSession[]
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 }
@@ -199,4 +200,31 @@ model Notification {
   recipient     NguoiDung @relation(fields: [recipient_id], references: [id])
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
+}
+
+// Chat models for Groq AI chatbot
+model ChatSession {
+  id             Int            @id @default(autoincrement())
+  nguoi_dung_id  Int
+  title          String?        @db.VarChar(255)
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  
+  nguoi_dung     NguoiDung      @relation(fields: [nguoi_dung_id], references: [id], onDelete: Cascade)
+  messages       ChatMessage[]
+  
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id             Int            @id @default(autoincrement())
+  session_id     Int
+  role           String         @db.VarChar(20) // "user" | "assistant" | "system"
+  content        String         @db.Text
+  created_at     DateTime       @default(now())
+  
+  session        ChatSession    @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  
+  @@map("chat_messages")
+  @@index([session_id])
 }

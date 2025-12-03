@@ -4,6 +4,7 @@ import "./globals.css";
 import QueryProvider from "@/providers/QueryProvider";
 import { ToastProvider } from "@/context/ToastContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import ChatWidget from "@/components/chat/ChatWidget";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,9 +24,10 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={inter.className}>
-          <ToastProvider>
-            <QueryProvider>{children}</QueryProvider>
-          </ToastProvider>
+        <ToastProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </ToastProvider>
+        <ChatWidget />
       </body>
     </html>
   );
