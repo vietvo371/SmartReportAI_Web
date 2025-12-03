@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -57,6 +57,8 @@ const workflowSteps = [
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [reports, setReports] = useState<any[]>([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,7 +67,7 @@ export default function LandingPage() {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
-    
+
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("mousemove", handleMouseMove);
     return () => {
@@ -73,6 +75,28 @@ export default function LandingPage() {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
+
+  useEffect(() => {
+    fetchPublicReports();
+  }, []);
+
+  const fetchPublicReports = async () => {
+    try {
+      setIsLoadingReports(true);
+      // Fetch public reports data
+      const response = await fetch('/api/reports/public');
+      if (response.ok) {
+        const data = await response.json();
+        setReports(data.reports || []);
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      // Set empty array on error
+      setReports([]);
+    } finally {
+      setIsLoadingReports(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 overflow-x-hidden">
@@ -83,7 +107,7 @@ export default function LandingPage() {
           animate={{
             x: mousePosition.x * 0.02,
             y: mousePosition.y * 0.02,
-          }} 
+          }}
           transition={{ type: "spring", stiffness: 50, damping: 30 }}
         />
         <motion.div
@@ -100,15 +124,14 @@ export default function LandingPage() {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
             ? "bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl shadow-theme-lg border-b border-gray-200/50 dark:border-gray-800/50"
             : "bg-transparent"
-        }`}
+          }`}
       >
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            <motion.div 
+            <motion.div
               className="flex items-center"
               whileHover={{ scale: 1.05 }}
             >
@@ -129,7 +152,7 @@ export default function LandingPage() {
                 </motion.a>
               ))}
             </div>
-            <motion.div 
+            <motion.div
               className="flex items-center gap-3"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -159,7 +182,7 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-white via-primary/10 to-blue-light-50/20 dark:from-gray-950 dark:via-primary/10 dark:to-blue-light-950/10" />
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] dark:opacity-[0.05]" />
         </div>
-        
+
         {/* Animated Decorative Elements */}
         <motion.div
           className="absolute top-20 right-10 w-72 h-72 bg-gradient-to-br from-primary/30 to-primary/20 rounded-full blur-3xl"
@@ -205,7 +228,7 @@ export default function LandingPage() {
                 Hệ thống phản ánh sự cố thông minh
               </span>
             </motion.div>
-            
+
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -217,18 +240,18 @@ export default function LandingPage() {
                 xử lý hiệu quả
               </span>
             </motion.h1>
-            
+
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="max-w-3xl mx-auto mb-10 text-lg text-gray-600 sm:text-xl dark:text-gray-400"
             >
-              SmartReportAI là hệ thống phản ánh và xử lý sự cố thông minh 
-              với AI nhận dạng và tính minh bạch blockchain, giúp người dân 
+              SmartReportAI là hệ thống phản ánh và xử lý sự cố thông minh
+              với AI nhận dạng và tính minh bạch blockchain, giúp người dân
               phản ánh sự cố và cán bộ xử lý một cách nhanh chóng và hiệu quả nhất.
             </motion.p>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -282,9 +305,60 @@ export default function LandingPage() {
             className="mt-16 sm:mt-24"
           >
             <div className="relative p-1 mx-auto rounded-2xl bg-gradient-to-r from-primary via-primary/90 to-blue-light-500 max-w-6xl shadow-2xl hover:shadow-primary/30 transition-shadow duration-500">
-              <div className="overflow-hidden bg-white rounded-xl dark:bg-gray-900">
-                <div className="aspect-video relative">
-                  <MapboxMap className="w-full h-full" />
+              <div className="overflow-hidden bg-white rounded-xl dark:bg-gray-900 p-6">
+                {/* Map Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Bản đồ sự cố hạ tầng
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>{isLoadingReports ? '...' : reports.length} sự cố</span>
+                  </div>
+                </div>
+
+                {/* Map Container */}
+                <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                  {isLoadingReports ? (
+                    <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-800">
+                      <div className="text-center">
+                        <div className="w-8 h-8 mx-auto mb-2 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Đang tải bản đồ...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <MapboxMap
+                      className="w-full h-full"
+                      reports={reports}
+                    />
+                  )}
+                </div>
+
+                {/* Legend */}
+                <div className="mt-4 flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Khẩn cấp (4-5)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Ưu tiên cao (3)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Ưu tiên trung bình (2)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Ưu tiên thấp (1)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Đã xử lý</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -296,7 +370,7 @@ export default function LandingPage() {
       <section id="features" className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 sm:py-32 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] dark:opacity-[0.03]" />
-        
+
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -383,7 +457,7 @@ export default function LandingPage() {
               >
                 {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                
+
                 {/* Animated Orb */}
                 <motion.div
                   className={`absolute top-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br ${feature.gradient} opacity-0 blur-2xl group-hover:opacity-20 transition-opacity duration-500 -mr-16 -mt-16`}
@@ -396,7 +470,7 @@ export default function LandingPage() {
                     ease: "easeInOut",
                   }}
                 />
-                
+
                 <div className="relative">
                   <motion.div
                     whileHover={{ rotate: 360, scale: 1.1 }}
@@ -447,9 +521,8 @@ export default function LandingPage() {
                     className="relative grid items-center grid-cols-1 gap-8 lg:grid-cols-2"
                   >
                     <div
-                      className={`${
-                        isLeftAligned ? "lg:text-right" : "lg:order-2"
-                      }`}
+                      className={`${isLeftAligned ? "lg:text-right" : "lg:order-2"
+                        }`}
                     >
                       <div
                         className={`inline-flex items-center gap-3 p-4 mb-4 rounded-lg bg-gradient-to-r ${step.highlight}`}
@@ -468,14 +541,12 @@ export default function LandingPage() {
                     </div>
 
                     <div
-                      className={`relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 ${
-                        isLeftAligned ? "lg:ml-12" : "lg:mr-12 lg:order-1"
-                      }`}
+                      className={`relative p-6 bg-gray-50 rounded-2xl dark:bg-gray-900 ${isLeftAligned ? "lg:ml-12" : "lg:mr-12 lg:order-1"
+                        }`}
                     >
                       <div
-                        className={`absolute ${
-                          isLeftAligned ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
-                        } top-1/2 hidden h-4 w-4 -translate-y-1/2 rounded-full bg-primary lg:block`}
+                        className={`absolute ${isLeftAligned ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
+                          } top-1/2 hidden h-4 w-4 -translate-y-1/2 rounded-full bg-primary lg:block`}
                       />
                       <div className="aspect-video rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 dark:from-primary/20 dark:to-primary/5 flex items-center justify-center">
                         <Icon className="w-12 h-12 text-primary dark:text-primary/70" />
@@ -553,14 +624,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
+
 
       {/* CTA Section */}
       <section className="relative py-20 overflow-hidden sm:py-32">
         {/* Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-blue-light-500"></div>
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        
+
         {/* Animated Orbs */}
         <motion.div
           className="absolute top-0 right-0 w-[500px] h-[500px] bg-white rounded-full blur-3xl opacity-20"
@@ -589,7 +660,7 @@ export default function LandingPage() {
             delay: 1,
           }}
         />
-        
+
         <div className="relative px-4 mx-auto text-center max-w-7xl sm:px-6 lg:px-8">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -611,7 +682,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="max-w-2xl mx-auto mb-10 text-lg text-white/90 sm:text-xl drop-shadow"
           >
-            Tham gia cùng chúng tôi để xây dựng một hệ thống phản ánh và xử lý sự cố 
+            Tham gia cùng chúng tôi để xây dựng một hệ thống phản ánh và xử lý sự cố
             minh bạch, hiệu quả và nhân văn hơn.
           </motion.p>
           <motion.div
@@ -661,11 +732,11 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-gray-700 via-gray-800 to-gray-900"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5"></div>
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-        
+
         {/* Subtle decorative elements */}
         <div className="absolute top-10 right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
-        
+
         <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
@@ -742,10 +813,10 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-      
+
       {/* Token Debugger - Remove in production */}
       {/* <TokenDebugger /> */}
-      
+
       {/* Role Tester - Remove in production */}
     </div>
   );
