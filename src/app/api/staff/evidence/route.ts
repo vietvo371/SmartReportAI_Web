@@ -149,6 +149,7 @@ export async function POST(req: NextRequest) {
         data: {
           phan_anh_id: reportId,
           can_bo_id: payload.userId,
+          trang_thai: finalStatus,
           trang_thai_moi: finalStatus,
           noi_dung: noiDung,
           hinh_anh_minh_chung: urlPath,
@@ -216,6 +217,7 @@ export async function POST(req: NextRequest) {
       data: {
         phan_anh_id: reportId,
         can_bo_id: payload.userId,
+        trang_thai: report.trang_thai,
         trang_thai_moi: report.trang_thai,
         noi_dung: description,
         hinh_anh_minh_chung: JSON.stringify(files),

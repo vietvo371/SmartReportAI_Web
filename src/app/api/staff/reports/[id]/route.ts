@@ -15,7 +15,7 @@ function extractToken(req: NextRequest): string | null {
 // GET /api/staff/reports/[id] - Lấy chi tiết phản ánh
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = extractToken(req);
@@ -28,7 +28,8 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const reportId = parseInt(params.id);
+    const { id } = await params;
+    const reportId = parseInt(id);
     if (isNaN(reportId)) {
       return NextResponse.json({ error: "Invalid report ID" }, { status: 400 });
     }
@@ -106,7 +107,7 @@ export async function GET(
 // PUT /api/staff/reports/[id] - Cập nhật trạng thái + thêm ghi chú xử lý
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = extractToken(req);
@@ -119,7 +120,8 @@ export async function PUT(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const reportId = parseInt(params.id);
+    const { id } = await params;
+    const reportId = parseInt(id);
     if (isNaN(reportId)) {
       return NextResponse.json({ error: "Invalid report ID" }, { status: 400 });
     }
@@ -165,6 +167,7 @@ export async function PUT(
       data: {
         phan_anh_id: reportId,
         can_bo_id: payload.userId,
+        trang_thai: trang_thai,
         trang_thai_moi: trang_thai,
         noi_dung,
         hinh_anh_minh_chung,

@@ -1,6 +1,17 @@
 "use client";
 
-import { Clock, CheckCircle, AlertTriangle, User, Calendar, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import {
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  User,
+  Calendar,
+  ExternalLink,
+  MapPin,
+  FileText,
+} from "lucide-react";
+import { Modal } from "@/components/ui/modal";
 import { Process } from "@/types/report";
 
 interface ProcessingTableProps {
@@ -8,6 +19,8 @@ interface ProcessingTableProps {
 }
 
 export default function ProcessingTable({ processes }: ProcessingTableProps) {
+  const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "cho_xu_ly":
@@ -47,6 +60,27 @@ export default function ProcessingTable({ processes }: ProcessingTableProps) {
     }
   };
 
+  const getLoaiSuCoText = (val: string) => {
+    const map: Record<string, string> = {
+      pothole: "Ổ gà",
+      flooding: "Ngập lụt",
+      traffic_light: "Đèn giao thông",
+      waste: "Rác thải",
+      traffic_jam: "Kẹt xe",
+      other: "Khác",
+    };
+    return map[val] || val;
+  };
+
+  const getSeverityLabel = (n?: number) => {
+    if (typeof n !== "number") return "Không rõ";
+    if (n >= 5) return "Khẩn cấp";
+    if (n >= 4) return "Rất cao";
+    if (n >= 3) return "Cao";
+    if (n >= 2) return "Trung bình";
+    return "Thấp";
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
       day: "2-digit",
@@ -59,6 +93,12 @@ export default function ProcessingTable({ processes }: ProcessingTableProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+      <ProcessDetailModal
+        process={selectedProcess}
+        onClose={() => setSelectedProcess(null)}
+        getSeverityLabel={getSeverityLabel}
+        getLoaiSuCoText={getLoaiSuCoText}
+      />
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           Quá trình xử lý
@@ -135,11 +175,20 @@ export default function ProcessingTable({ processes }: ProcessingTableProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                   <div className="flex items-center gap-2">
                     {process.hinh_anh_minh_chung && (
-                      <button className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                      <a
+                        href={process.hinh_anh_minh_chung}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <ExternalLink className="w-4 h-4" />
-                      </button>
+                      </a>
                     )}
-                    <button className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300">
+                    <button
+                      onClick={() => setSelectedProcess(process)}
+                      className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                    >
                       Chi tiết
                     </button>
                   </div>
@@ -159,5 +208,110 @@ export default function ProcessingTable({ processes }: ProcessingTableProps) {
         )}
       </div>
     </div>
+  );
+}
+
+type ProcessDetailModalProps = {
+  process: Process | null;
+  onClose: () => void;
+  getSeverityLabel: (n?: number) => string;
+  getLoaiSuCoText: (val: string) => string;
+};
+
+function ProcessDetailModal({
+  process,
+  onClose,
+  getSeverityLabel,
+  getLoaiSuCoText,
+}: ProcessDetailModalProps) {
+  if (!process) return null;
+
+  const severityLabel = getSeverityLabel(process.phan_anh?.muc_do_nghiem_trong);
+
+  return (
+    <Modal isOpen={!!process} onClose={onClose} className="max-w-3xl">
+      <div className="p-6 space-y-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-brand-500">
+              Phản ánh #{process.phan_anh_id}
+            </p>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {process.trang_thai_moi === "da_hoan_tat"
+                ? "Đã hoàn thành"
+                : process.trang_thai_moi === "dang_xu_ly"
+                ? "Đang xử lý"
+                : "Chờ xử lý"}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Cập nhật lúc {new Date(process.thoi_gian).toLocaleString("vi-VN")}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            Đóng
+          </button>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700 space-y-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Người xử lý</p>
+            <p className="font-semibold text-gray-900 dark:text-white">
+              {process.can_bo.ho_ten}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {process.can_bo.email}
+            </p>
+            {process.can_bo.so_dien_thoai && (
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                {process.can_bo.so_dien_thoai}
+              </p>
+            )}
+          </div>
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700 space-y-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Sự cố</p>
+            <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200">
+              <FileText className="w-4 h-4" />
+              <span>{getLoaiSuCoText(process.phan_anh?.loai_su_co || "")}</span>
+            </div>
+            <div className="text-sm text-gray-700 dark:text-gray-200">
+              Mức độ: {severityLabel}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+              <MapPin className="w-4 h-4" />
+              <span>
+                {typeof process.phan_anh?.vi_do === "number" &&
+                typeof process.phan_anh?.kinh_do === "number"
+                  ? `${process.phan_anh.vi_do.toFixed(6)}, ${process.phan_anh.kinh_do.toFixed(6)}`
+                  : "Chưa có tọa độ"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700 space-y-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Nội dung phản hồi</p>
+          <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line">
+            {process.noi_dung || "Không có ghi chú"}
+          </p>
+        </div>
+
+        {process.hinh_anh_minh_chung && (
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Hình ảnh minh chứng</p>
+            <a
+              href={process.hinh_anh_minh_chung}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-brand-600 hover:underline"
+            >
+              Mở hình ảnh
+            </a>
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 }

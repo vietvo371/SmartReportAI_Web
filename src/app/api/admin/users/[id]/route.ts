@@ -6,7 +6,7 @@ import { hashPassword } from "@/lib/auth";
 // PATCH /api/admin/users/[id] - Update user
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const token = req.cookies.get("token")?.value;
@@ -19,7 +19,8 @@ export async function PATCH(
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const userId = parseInt(params.id);
+        const { id } = await params;
+        const userId = parseInt(id);
         const body = await req.json();
         const { ho_ten, email, mat_khau, so_dien_thoai, dia_chi, vai_tro } = body;
 
@@ -80,7 +81,7 @@ export async function PATCH(
 // DELETE /api/admin/users/[id] - Delete user
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const token = req.cookies.get("token")?.value;
@@ -93,7 +94,8 @@ export async function DELETE(
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const userId = parseInt(params.id);
+        const { id } = await params;
+        const userId = parseInt(id);
 
         // Prevent deleting admin accounts
         const existingUser = await prisma.nguoiDung.findUnique({

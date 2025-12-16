@@ -152,6 +152,7 @@ export async function PUT(req: NextRequest) {
       data: {
         phan_anh_id: reportId,
         can_bo_id: payload.userId,
+        trang_thai: trang_thai,
         trang_thai_moi: trang_thai,
         noi_dung,
         hinh_anh_minh_chung,
@@ -232,6 +233,7 @@ export async function POST(req: NextRequest) {
         data: {
           phan_anh_id: reportId,
           can_bo_id: payload.userId,
+          trang_thai: updated.trang_thai,
           trang_thai_moi: updated.trang_thai,
           noi_dung: "Cán bộ đã nhận nhiệm vụ",
         },
@@ -266,6 +268,7 @@ export async function POST(req: NextRequest) {
       data: {
         phan_anh_id: reportId,
         can_bo_id: payload.userId,
+        trang_thai: "cho_xu_ly",
         trang_thai_moi: "cho_xu_ly",
         noi_dung: "Cán bộ đã bàn giao nhiệm vụ",
       },

@@ -16,7 +16,7 @@ echo "🔧 Activating virtual environment..."
 source venv/bin/activate
 
 # Install dependencies
-echo "📋 Installing dependencies..."
+echo "📋 Installing dependencies..." 
 pip install -r requirements.txt
 
 # Start the service

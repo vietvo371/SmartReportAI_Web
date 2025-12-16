@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 // PUT /api/users/{id}/password - Change password
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } | Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = req.cookies.get("token")?.value;
@@ -19,8 +19,8 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const resolvedParams = await Promise.resolve(params);
-    const userId = parseInt(resolvedParams.id, 10);
+    const { id } = await params;
+    const userId = parseInt(id, 10);
 
     const requesterId = (payload as any).id ?? (payload as any).userId;
 
