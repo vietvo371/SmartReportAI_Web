@@ -19,13 +19,13 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0901234567",
       vai_tro: "quan_tri",
-      dia_chi: "Trung tâm hành chính TP.HCM",
+      dia_chi: "Trung tâm hành chính Đà Nẵng",
       avatar_url: "/images/user/user-01.jpg",
       ai_performance_score: 95.0,
     },
   });
 
-  // Create more diverse staff users with different specializations
+  // Create diverse staff users with different specializations and locations across Da Nang
   const staff1 = await prisma.nguoiDung.upsert({
     where: { email: "staff1@smartreport.ai" },
     update: {},
@@ -35,12 +35,12 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0912345678", 
       vai_tro: "can_bo",
-      dia_chi: "Quận 1, TP.HCM",
+      dia_chi: "Quận Hải Châu, Đà Nẵng",
       avatar_url: "/images/user/user-02.jpg",
       skills: ["road_repair", "asphalt_work", "drainage"],
       current_workload: 0,
-      location_lat: 10.7769,
-      location_lng: 106.7009,
+      location_lat: 16.0544,
+      location_lng: 108.2022,
       ai_performance_score: 88.5,
     },
   });
@@ -54,12 +54,12 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0923456789",
       vai_tro: "can_bo", 
-      dia_chi: "Quận 3, TP.HCM",
+      dia_chi: "Quận Thanh Khê, Đà Nẵng",
       avatar_url: "/images/user/user-03.jpg",
       skills: ["electrical", "traffic_systems", "emergency_response"],
       current_workload: 0,
-      location_lat: 10.7829,
-      location_lng: 106.6953,
+      location_lat: 16.0735,
+      location_lng: 108.1583,
       ai_performance_score: 92.3,
     },
   });
@@ -73,12 +73,12 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0934567890",
       vai_tro: "can_bo",
-      dia_chi: "Quận 7, TP.HCM", 
+      dia_chi: "Quận Sơn Trà, Đà Nẵng", 
       avatar_url: "/images/user/user-04.jpg",
       skills: ["waste_management", "cleaning", "traffic_control"],
       current_workload: 0,
-      location_lat: 10.7356,
-      location_lng: 106.7183,
+      location_lat: 16.0717,
+      location_lng: 108.2386,
       ai_performance_score: 85.7,
     },
   });
@@ -92,12 +92,12 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0945678901",
       vai_tro: "can_bo",
-      dia_chi: "Quận Bình Thạnh, TP.HCM", 
+      dia_chi: "Quận Ngũ Hành Sơn, Đà Nẵng", 
       avatar_url: "/images/user/user-05.jpg",
       skills: ["tree_maintenance", "park_management", "landscaping"],
       current_workload: 0,
-      location_lat: 10.8012,
-      location_lng: 106.7195,
+      location_lat: 16.0408,
+      location_lng: 108.2504,
       ai_performance_score: 90.2,
     },
   });
@@ -111,17 +111,55 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0956789012",
       vai_tro: "can_bo",
-      dia_chi: "Quận Tân Bình, TP.HCM", 
+      dia_chi: "Quận Liên Chiểu, Đà Nẵng", 
       avatar_url: "/images/user/user-06.jpg",
       skills: ["security", "patrol", "emergency_response", "traffic_control"],
       current_workload: 0,
-      location_lat: 10.8142,
-      location_lng: 106.6438,
+      location_lat: 16.0693,
+      location_lng: 108.1506,
       ai_performance_score: 87.8,
     },
   });
 
-  // Create more diverse citizens from different districts
+  const staff6 = await prisma.nguoiDung.upsert({
+    where: { email: "staff6@smartreport.ai" },
+    update: {},
+    create: {
+      ho_ten: "Võ Thị Ngọc",
+      email: "staff6@smartreport.ai",
+      mat_khau: hashedPassword,
+      so_dien_thoai: "0967890123",
+      vai_tro: "can_bo",
+      dia_chi: "Quận Cẩm Lệ, Đà Nẵng", 
+      avatar_url: "/images/user/user-13.jpg",
+      skills: ["road_repair", "traffic_systems", "drainage"],
+      current_workload: 0,
+      location_lat: 16.0285,
+      location_lng: 108.1935,
+      ai_performance_score: 89.5,
+    },
+  });
+
+  const staff7 = await prisma.nguoiDung.upsert({
+    where: { email: "staff7@smartreport.ai" },
+    update: {},
+    create: {
+      ho_ten: "Huỳnh Văn Hải",
+      email: "staff7@smartreport.ai",
+      mat_khau: hashedPassword,
+      so_dien_thoai: "0978901234",
+      vai_tro: "can_bo",
+      dia_chi: "Quận Hải Châu, Đà Nẵng", 
+      avatar_url: "/images/user/user-14.jpg",
+      skills: ["waste_management", "environmental", "cleaning"],
+      current_workload: 0,
+      location_lat: 16.0478,
+      location_lng: 108.2088,
+      ai_performance_score: 86.2,
+    },
+  });
+
+  // Create diverse citizens from different districts in Da Nang
   const citizen1 = await prisma.nguoiDung.upsert({
     where: { email: "citizen1@gmail.com" },
     update: {},
@@ -131,7 +169,7 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0945678901",
       vai_tro: "nguoi_dan",
-      dia_chi: "123 Lê Lợi, Quận 1, TP.HCM",
+      dia_chi: "123 Trần Phú, Quận Hải Châu, Đà Nẵng",
       avatar_url: "/images/user/user-07.jpg",
     },
   });
@@ -145,7 +183,7 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0956789012",
       vai_tro: "nguoi_dan",
-      dia_chi: "456 Nguyễn Huệ, Quận 1, TP.HCM",
+      dia_chi: "456 Lê Duẩn, Quận Hải Châu, Đà Nẵng",
       avatar_url: "/images/user/user-08.jpg",
     },
   });
@@ -159,7 +197,7 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0967890123",
       vai_tro: "nguoi_dan",
-      dia_chi: "789 Võ Văn Tần, Quận 3, TP.HCM",
+      dia_chi: "789 Nguyễn Văn Linh, Quận Thanh Khê, Đà Nẵng",
       avatar_url: "/images/user/user-09.jpg",
     },
   });
@@ -173,7 +211,7 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0978901234",
       vai_tro: "nguoi_dan",
-      dia_chi: "321 Nguyễn Đình Chiểu, Quận 3, TP.HCM",
+      dia_chi: "321 Điện Biên Phủ, Quận Thanh Khê, Đà Nẵng",
       avatar_url: "/images/user/user-10.jpg",
     },
   });
@@ -187,7 +225,7 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0989012345",
       vai_tro: "nguoi_dan",
-      dia_chi: "654 Nguyễn Văn Trỗi, Quận Phú Nhuận, TP.HCM",
+      dia_chi: "654 Ngô Quyền, Quận Sơn Trà, Đà Nẵng",
       avatar_url: "/images/user/user-11.jpg",
     },
   });
@@ -201,8 +239,64 @@ async function main() {
       mat_khau: hashedPassword,
       so_dien_thoai: "0990123456",
       vai_tro: "nguoi_dan",
-      dia_chi: "987 Điện Biên Phủ, Quận Bình Thạnh, TP.HCM",
+      dia_chi: "987 Võ Nguyên Giáp, Quận Ngũ Hành Sơn, Đà Nẵng",
       avatar_url: "/images/user/user-12.jpg",
+    },
+  });
+
+  const citizen7 = await prisma.nguoiDung.upsert({
+    where: { email: "citizen7@gmail.com" },
+    update: {},
+    create: {
+      ho_ten: "Đặng Thị Mỹ",
+      email: "citizen7@gmail.com", 
+      mat_khau: hashedPassword,
+      so_dien_thoai: "0901234568",
+      vai_tro: "nguoi_dan",
+      dia_chi: "222 Ông Ích Khiêm, Quận Hải Châu, Đà Nẵng",
+      avatar_url: "/images/user/user-15.jpg",
+    },
+  });
+
+  const citizen8 = await prisma.nguoiDung.upsert({
+    where: { email: "citizen8@gmail.com" },
+    update: {},
+    create: {
+      ho_ten: "Phan Văn Long",
+      email: "citizen8@gmail.com", 
+      mat_khau: hashedPassword,
+      so_dien_thoai: "0912345679",
+      vai_tro: "nguoi_dan",
+      dia_chi: "555 Hùng Vương, Quận Hải Châu, Đà Nẵng",
+      avatar_url: "/images/user/user-16.jpg",
+    },
+  });
+
+  const citizen9 = await prisma.nguoiDung.upsert({
+    where: { email: "citizen9@gmail.com" },
+    update: {},
+    create: {
+      ho_ten: "Bùi Thị Xuân",
+      email: "citizen9@gmail.com", 
+      mat_khau: hashedPassword,
+      so_dien_thoai: "0923456790",
+      vai_tro: "nguoi_dan",
+      dia_chi: "888 Hoàng Diệu, Quận Hải Châu, Đà Nẵng",
+      avatar_url: "/images/user/user-17.jpg",
+    },
+  });
+
+  const citizen10 = await prisma.nguoiDung.upsert({
+    where: { email: "citizen10@gmail.com" },
+    update: {},
+    create: {
+      ho_ten: "Ngô Văn Phúc",
+      email: "citizen10@gmail.com", 
+      mat_khau: hashedPassword,
+      so_dien_thoai: "0934567891",
+      vai_tro: "nguoi_dan",
+      dia_chi: "111 Phan Châu Trinh, Quận Hải Châu, Đà Nẵng",
+      avatar_url: "/images/user/user-18.jpg",
     },
   });
 
@@ -222,16 +316,16 @@ async function main() {
     "/uploads/reports/1763724493260_uk1ihn.png"
   ];
 
-  // Create diverse sample reports with different types and statuses using existing images
+  // Create diverse sample reports across Da Nang with different types and statuses
   const report1 = await prisma.phanAnh.create({
     data: {
       nguoi_dung_id: citizen1.id,
-      tieu_de: "Ổ gà lớn trên đường Lê Lợi",
-      mo_ta: "Có một ổ gà rất lớn trên đường Lê Lợi gây nguy hiểm cho người tham gia giao thông. Kích thước khoảng 1m x 0.5m, sâu khoảng 15cm.",
+      tieu_de: "Ổ gà lớn trên đường Trần Phú",
+      mo_ta: "Có một ổ gà rất lớn trên đường Trần Phú gần cầu Rồng gây nguy hiểm cho người tham gia giao thông. Kích thước khoảng 1m x 0.5m, sâu khoảng 15cm.",
       loai_su_co: "pothole",
-      vi_do: 10.7769,
-      kinh_do: 106.7009,
-      dia_chi: "123 Lê Lợi, Quận 1, TP.HCM",
+      vi_do: 16.0544,
+      kinh_do: 108.2022,
+      dia_chi: "123 Trần Phú, Quận Hải Châu, Đà Nẵng",
       hinh_anh_url: existingImages[0] || null,
       muc_do_nghiem_trong: 4,
       trang_thai: "cho_xu_ly",
@@ -249,12 +343,12 @@ async function main() {
   const report2 = await prisma.phanAnh.create({
     data: {
       nguoi_dung_id: citizen2.id,
-      tieu_de: "Ngập nước sau mưa lớn",
-      mo_ta: "Khu vực ngã tư Nguyễn Huệ - Lê Thánh Tôn bị ngập nước sâu sau mưa. Nước ngập cao khoảng 30cm, kéo dài từ 6h sáng đến 10h sáng.",
+      tieu_de: "Ngập nước sau mưa lớn khu vực Hàn Thuyên",
+      mo_ta: "Khu vực đường Hàn Thuyên - Lê Duẩn bị ngập nước sâu sau mưa. Nước ngập cao khoảng 40cm, gây ảnh hưởng nghiêm trọng đến giao thông.",
       loai_su_co: "flooding", 
-      vi_do: 10.7740,
-      kinh_do: 106.7034,
-      dia_chi: "Ngã tư Nguyễn Huệ - Lê Thánh Tôn, Quận 1",
+      vi_do: 16.0478,
+      kinh_do: 108.2088,
+      dia_chi: "Đường Hàn Thuyên, Quận Hải Châu, Đà Nẵng",
       hinh_anh_url: existingImages[1] || null,
       muc_do_nghiem_trong: 5,
       trang_thai: "da_phan_cong",
@@ -274,23 +368,23 @@ async function main() {
   const report3 = await prisma.phanAnh.create({
     data: {
       nguoi_dung_id: citizen3.id,
-      tieu_de: "Đèn giao thông hỏng",
-      mo_ta: "Đèn giao thông tại ngã tư Pasteur - Lê Duẩn bị hỏng, chỉ còn đèn vàng nhấp nháy. Gây kẹt xe nghiêm trọng vào giờ cao điểm.",
+      tieu_de: "Đèn giao thông hỏng tại ngã tư Nguyễn Văn Linh",
+      mo_ta: "Đèn giao thông tại ngã tư Nguyễn Văn Linh - Tôn Đức Thắng bị hỏng, chỉ còn đèn vàng nhấp nháy. Gây kẹt xe nghiêm trọng vào giờ cao điểm.",
       loai_su_co: "traffic_light",
-      vi_do: 10.7831,
-      kinh_do: 106.6968,
-      dia_chi: "Ngã tư Pasteur - Lê Duẩn, Quận 3",
+      vi_do: 16.0735,
+      kinh_do: 108.1583,
+      dia_chi: "Ngã tư Nguyễn Văn Linh - Tôn Đức Thắng, Quận Thanh Khê",
       hinh_anh_url: existingImages[2] || null,
-      muc_do_nghiem_trong: 3,
+      muc_do_nghiem_trong: 4,
       trang_thai: "da_hoan_tat",
       can_bo_id: staff2.id,
       ai_classification: "traffic_light",
       ai_confidence: 0.87,
       ai_description: "Đèn giao thông được phát hiện trong hình ảnh",
       user_original_choice: "traffic_light", 
-      ai_severity: "medium",
+      ai_severity: "high",
       ai_processing_time_ms: 1650,
-      ai_priority_score: 68,
+      ai_priority_score: 82,
       ai_estimated_hours: 3.0,
     },
   });
@@ -298,12 +392,12 @@ async function main() {
   const report4 = await prisma.phanAnh.create({
     data: {
       nguoi_dung_id: citizen4.id,
-      tieu_de: "Rác thải tràn lan trên vỉa hè",
-      mo_ta: "Khu vực gần chợ Bến Thành có rác thải tràn ra vỉa hè, gây mùi hôi và ảnh hưởng đến môi trường. Tình trạng kéo dài 3 ngày.",
+      tieu_de: "Rác thải tràn lan trên đường Điện Biên Phủ",
+      mo_ta: "Khu vực gần chợ Thanh Khê có rác thải tràn ra vỉa hè, gây mùi hôi và ảnh hưởng đến môi trường. Tình trạng kéo dài 3 ngày.",
       loai_su_co: "waste",
-      vi_do: 10.7722,
-      kinh_do: 106.6980,
-      dia_chi: "Đường Lê Lợi, gần chợ Bến Thành, Quận 1",
+      vi_do: 16.0698,
+      kinh_do: 108.1612,
+      dia_chi: "Đường Điện Biên Phủ, gần chợ Thanh Khê",
       hinh_anh_url: existingImages[3] || null,
       muc_do_nghiem_trong: 3,
       trang_thai: "dang_xu_ly",
@@ -322,12 +416,12 @@ async function main() {
   const report5 = await prisma.phanAnh.create({
     data: {
       nguoi_dung_id: citizen5.id,
-      tieu_de: "Cây xanh gãy đổ chắn đường",
-      mo_ta: "Cây phượng lớn bị gãy đổ sau cơn mưa to, chắn ngang đường Nguyễn Văn Trỗi. Gây ách tắc giao thông và nguy hiểm cho người đi đường.",
+      tieu_de: "Cây xanh gãy đổ chắn đường Võ Nguyên Giáp",
+      mo_ta: "Cây phượng lớn bị gãy đổ sau cơn bão, chắn ngang đường Võ Nguyên Giáp gần bãi biển Mỹ Khê. Gây ách tắc giao thông và nguy hiểm.",
       loai_su_co: "other",
-      vi_do: 10.7980,
-      kinh_do: 106.6757,
-      dia_chi: "987 Nguyễn Văn Trỗi, Quận Phú Nhuận",
+      vi_do: 16.0408,
+      kinh_do: 108.2504,
+      dia_chi: "Đường Võ Nguyên Giáp, Quận Ngũ Hành Sơn",
       hinh_anh_url: existingImages[4] || null,
       muc_do_nghiem_trong: 5,
       trang_thai: "da_hoan_tat",
@@ -346,12 +440,12 @@ async function main() {
   const report6 = await prisma.phanAnh.create({
     data: {
       nguoi_dung_id: citizen6.id,
-      tieu_de: "Kẹt xe nghiêm trọng do tai nạn",
-      mo_ta: "Hai xe máy va chạm tại ngã tư Điện Biên Phủ - Xô Viết Nghệ Tĩnh gây kẹt xe kéo dài. Cần có lực lượng điều tiết giao thông.",
+      tieu_de: "Kẹt xe nghiêm trọng do tai nạn trên cầu Thuận Phước",
+      mo_ta: "Hai xe ô tô va chạm tại cầu Thuận Phước gây kẹt xe kéo dài. Cần có lực lượng điều tiết giao thông khẩn cấp.",
       loai_su_co: "traffic_jam",
-      vi_do: 10.8012,
-      kinh_do: 106.7195,
-      dia_chi: "Ngã tư Điện Biên Phủ - Xô Viết Nghệ Tĩnh, Quận Bình Thạnh",
+      vi_do: 16.0882,
+      kinh_do: 108.2065,
+      dia_chi: "Cầu Thuận Phước, Đà Nẵng",
       hinh_anh_url: existingImages[5] || null,
       muc_do_nghiem_trong: 4,
       trang_thai: "da_hoan_tat",
@@ -369,13 +463,13 @@ async function main() {
 
   const report7 = await prisma.phanAnh.create({
     data: {
-      nguoi_dung_id: citizen1.id,
-      tieu_de: "Vỉa hè bị hư hỏng nặng",
-      mo_ta: "Vỉa hè đường Trần Hưng Đạo bị nứt vỡ, nhiều gạch bị bong tróc tạo thành ổ gà nhỏ. Khó khăn cho người đi bộ, đặc biệt là người già và trẻ em.",
+      nguoi_dung_id: citizen7.id,
+      tieu_de: "Vỉa hè bị hư hỏng nặng trên đường Ông Ích Khiêm",
+      mo_ta: "Vỉa hè đường Ông Ích Khiêm bị nứt vỡ, nhiều gạch bị bong tróc. Khó khăn cho người đi bộ, đặc biệt là người già và trẻ em.",
       loai_su_co: "other",
-      vi_do: 10.7571,
-      kinh_do: 106.6847,
-      dia_chi: "278 Trần Hưng Đạo, Quận 1",
+      vi_do: 16.0512,
+      kinh_do: 108.2156,
+      dia_chi: "222 Ông Ích Khiêm, Quận Hải Châu",
       hinh_anh_url: existingImages[6] || null,
       muc_do_nghiem_trong: 2,
       trang_thai: "cho_xu_ly",
@@ -392,13 +486,13 @@ async function main() {
 
   const report8 = await prisma.phanAnh.create({
     data: {
-      nguoi_dung_id: citizen3.id,
-      tieu_de: "Nắp cống bị mất gây nguy hiểm",
-      mo_ta: "Nắp cống thoát nước trên đường Võ Văn Tần bị mất, tạo thành hố sâu nguy hiểm cho xe máy và người đi bộ. Đặc biệt nguy hiểm vào ban đêm.",
+      nguoi_dung_id: citizen8.id,
+      tieu_de: "Nắp cống bị mất gây nguy hiểm trên Hùng Vương",
+      mo_ta: "Nắp cống thoát nước trên đường Hùng Vương bị mất, tạo thành hố sâu nguy hiểm cho xe máy và người đi bộ. Đặc biệt nguy hiểm vào ban đêm.",
       loai_su_co: "other",
-      vi_do: 10.7887,
-      kinh_do: 106.6917,
-      dia_chi: "789 Võ Văn Tần, Quận 3",
+      vi_do: 16.0589,
+      kinh_do: 108.2142,
+      dia_chi: "555 Hùng Vương, Quận Hải Châu",
       hinh_anh_url: existingImages[7] || null,
       muc_do_nghiem_trong: 5,
       trang_thai: "dang_xu_ly",
@@ -414,9 +508,176 @@ async function main() {
     },
   });
 
+  const report9 = await prisma.phanAnh.create({
+    data: {
+      nguoi_dung_id: citizen9.id,
+      tieu_de: "Đèn đường bị hỏng khu vực Hoàng Diệu",
+      mo_ta: "Đoạn đường Hoàng Diệu gần bệnh viện C có nhiều đèn đường bị hỏng, gây tối đen và mất an toàn vào ban đêm. Nhiều người sợ đi qua khu vực này.",
+      loai_su_co: "other",
+      vi_do: 16.0623,
+      kinh_do: 108.2211,
+      dia_chi: "888 Hoàng Diệu, Quận Hải Châu",
+      hinh_anh_url: existingImages[8] || null,
+      muc_do_nghiem_trong: 3,
+      trang_thai: "cho_xu_ly",
+      ai_classification: "other",
+      ai_confidence: 0.68,
+      ai_description: "Đèn đường hỏng được phát hiện",
+      user_original_choice: "other", 
+      ai_severity: "medium",
+      ai_processing_time_ms: 1320,
+      ai_priority_score: 58,
+      ai_estimated_hours: 4.0,
+    },
+  });
+
+  const report10 = await prisma.phanAnh.create({
+    data: {
+      nguoi_dung_id: citizen10.id,
+      tieu_de: "Ổ gà nhiều điểm trên đường Phan Châu Trinh",
+      mo_ta: "Đường Phan Châu Trinh có nhiều ổ gà nhỏ và vừa xuất hiện sau mưa lớn. Gây khó khăn cho xe máy lưu thông, có nguy cơ té ngã.",
+      loai_su_co: "pothole",
+      vi_do: 16.0467,
+      kinh_do: 108.2198,
+      dia_chi: "111 Phan Châu Trinh, Quận Hải Châu",
+      hinh_anh_url: existingImages[9] || null,
+      muc_do_nghiem_trong: 3,
+      trang_thai: "cho_xu_ly",
+      ai_classification: "pothole",
+      ai_confidence: 0.85,
+      ai_description: "Nhiều ổ gà được phát hiện trong hình ảnh",
+      user_original_choice: "pothole", 
+      ai_severity: "medium",
+      ai_processing_time_ms: 1590,
+      ai_priority_score: 65,
+      ai_estimated_hours: 5.0,
+    },
+  });
+
+  const report11 = await prisma.phanAnh.create({
+    data: {
+      nguoi_dung_id: citizen1.id,
+      tieu_de: "Biển báo giao thông bị che khuất bởi cây",
+      mo_ta: "Biển báo giới hạn tốc độ trên đường Lý Thái Tổ bị cây che khuất hoàn toàn, tài xế không thể nhìn thấy. Cần tỉa cây hoặc di chuyển biển báo.",
+      loai_su_co: "other",
+      vi_do: 16.0556,
+      kinh_do: 108.2034,
+      dia_chi: "Đường Lý Thái Tổ, Quận Hải Châu",
+      hinh_anh_url: null,
+      muc_do_nghiem_trong: 2,
+      trang_thai: "cho_xu_ly",
+      ai_classification: "other",
+      ai_confidence: 0.71,
+      ai_description: "Biển báo bị che khuất được phát hiện",
+      user_original_choice: "other", 
+      ai_severity: "low",
+      ai_processing_time_ms: 1180,
+      ai_priority_score: 40,
+      ai_estimated_hours: 2.0,
+    },
+  });
+
+  const report12 = await prisma.phanAnh.create({
+    data: {
+      nguoi_dung_id: citizen3.id,
+      tieu_de: "Rò rỉ nước máy trên đường Hai Bà Trưng",
+      mo_ta: "Đường ống nước máy bị rò rỉ nghiêm trọng trên đường Hai Bà Trưng, nước chảy tràn ra đường gây lãng phí và nguy cơ sụt lún đường.",
+      loai_su_co: "other",
+      vi_do: 16.0721,
+      kinh_do: 108.1598,
+      dia_chi: "Đường Hai Bà Trưng, Quận Thanh Khê",
+      hinh_anh_url: null,
+      muc_do_nghiem_trong: 4,
+      trang_thai: "da_phan_cong",
+      can_bo_id: staff6.id,
+      ai_classification: "flooding",
+      ai_confidence: 0.73,
+      ai_description: "Rò rỉ nước được phát hiện trong hình ảnh",
+      user_original_choice: "other", 
+      ai_severity: "high",
+      ai_processing_time_ms: 1890,
+      ai_priority_score: 78,
+      ai_estimated_hours: 6.0,
+      auto_assigned: true,
+    },
+  });
+
+  const report13 = await prisma.phanAnh.create({
+    data: {
+      nguoi_dung_id: citizen5.id,
+      tieu_de: "Bãi rác tự phát gần cầu Thuận Phước",
+      mo_ta: "Khu vực đất trống gần cầu Thuận Phước bị người dân đổ rác tự phát, tạo thành bãi rác lớn, gây ô nhiễm môi trường nghiêm trọng.",
+      loai_su_co: "waste",
+      vi_do: 16.0795411,
+      kinh_do: 108.2399877,
+      dia_chi: "Khu vực gần cầu Thuận Phước, Quận Liên Chiểu",
+      hinh_anh_url: null,
+      muc_do_nghiem_trong: 4,
+      trang_thai: "dang_xu_ly",
+      can_bo_id: staff7.id,
+      ai_classification: "waste",
+      ai_confidence: 0.88,
+      ai_description: "Bãi rác lớn được phát hiện trong hình ảnh",
+      user_original_choice: "waste", 
+      ai_severity: "high",
+      ai_processing_time_ms: 1670,
+      ai_priority_score: 80,
+      ai_estimated_hours: 8.0,
+    },
+  });
+
+  const report14 = await prisma.phanAnh.create({
+    data: {
+      nguoi_dung_id: citizen7.id,
+      tieu_de: "Cây phượng cổ thụ có nguy cơ đổ",
+      mo_ta: "Cây phượng cổ thụ trên đường Phan Đăng Lưu bị nghiêng sau mưa bão, có nguy cơ đổ cao. Gần khu dân cư đông đúc, rất nguy hiểm.",
+      loai_su_co: "other",
+      vi_do: 16.0689,
+      kinh_do: 108.1621,
+      dia_chi: "Đường Phan Đăng Lưu, Quận Thanh Khê",
+      hinh_anh_url: null,
+      muc_do_nghiem_trong: 5,
+      trang_thai: "da_phan_cong",
+      can_bo_id: staff4.id,
+      ai_classification: "other",
+      ai_confidence: 0.79,
+      ai_description: "Cây có nguy cơ đổ được phát hiện",
+      user_original_choice: "other", 
+      ai_severity: "critical",
+      ai_processing_time_ms: 2050,
+      ai_priority_score: 98,
+      ai_estimated_hours: 4.0,
+      auto_assigned: true,
+    },
+  });
+
+  const report15 = await prisma.phanAnh.create({
+    data: {
+      nguoi_dung_id: citizen9.id,
+      tieu_de: "Va chạm giao thông nhỏ tại ngã tư Trưng Nữ Vương",
+      mo_ta: "Hai xe máy va chạm nhỏ tại ngã tư Trưng Nữ Vương - Nguyễn Chí Thanh, gây ùn tắc nhẹ. Các bên đang tranh cãi.",
+      loai_su_co: "traffic_jam",
+      vi_do: 16.0634,
+      kinh_do: 108.1689,
+      dia_chi: "Ngã tư Trưng Nữ Vương - Nguyễn Chí Thanh",
+      hinh_anh_url: null,
+      muc_do_nghiem_trong: 2,
+      trang_thai: "da_hoan_tat",
+      can_bo_id: staff5.id,
+      ai_classification: "traffic_jam",
+      ai_confidence: 0.81,
+      ai_description: "Va chạm giao thông được phát hiện",
+      user_original_choice: "traffic_jam", 
+      ai_severity: "low",
+      ai_processing_time_ms: 980,
+      ai_priority_score: 35,
+      ai_estimated_hours: 0.5,
+    },
+  });
+
   console.log("📋 Reports created successfully");
 
-  // Create diverse AI analyses for different report types using existing images
+  // Create diverse AI analyses for different report types
   const aiAnalyses = await Promise.all([
     prisma.aiAnalysis.create({
       data: {
@@ -489,6 +750,78 @@ async function main() {
           }
         }
       },
+    }),
+    prisma.aiAnalysis.create({
+      data: {
+        nguoi_dung_id: citizen3.id,
+        phan_anh_id: report3.id,
+        image_url: existingImages[2] || null,
+        predicted_label: "traffic_light",
+        confidence_score: 0.87,
+        description: "Đèn giao thông hỏng được phát hiện trong hình ảnh",
+        severity: "high",
+        suggested_priority: "high",
+        location_hints: ["ngã tư", "giao lộ", "trung tâm thành phố"],
+        detected_objects: ["traffic_light", "intersection", "vehicles", "street"],
+        model_version: "smart-v1.2",
+        processing_time_ms: 1650,
+        debug_info: {
+          vehicle_count: 5,
+          analysis_breakdown: {
+            vehicles: ["car", "motorbike", "bus"],
+            traffic_systems: ["traffic_light", "road_marking"],
+            infrastructure: ["intersection", "street"]
+          }
+        }
+      },
+    }),
+    prisma.aiAnalysis.create({
+      data: {
+        nguoi_dung_id: citizen10.id,
+        phan_anh_id: report10.id,
+        image_url: existingImages[9] || null,
+        predicted_label: "pothole",
+        confidence_score: 0.85,
+        description: "Nhiều ổ gà được phát hiện trong hình ảnh",
+        severity: "medium",
+        suggested_priority: "medium",
+        location_hints: ["đường phố", "khu vực nội thành"],
+        detected_objects: ["road", "multiple_potholes", "pavement_damage"],
+        model_version: "smart-v1.2",
+        processing_time_ms: 1590,
+        debug_info: {
+          vehicle_count: 1,
+          analysis_breakdown: {
+            vehicles: ["motorbike"],
+            damage_indicators: ["multiple potholes", "road damage"],
+            infrastructure: ["road", "pavement"]
+          }
+        }
+      },
+    }),
+    prisma.aiAnalysis.create({
+      data: {
+        nguoi_dung_id: citizen5.id,
+        phan_anh_id: report13.id,
+        image_url: null,
+        predicted_label: "waste",
+        confidence_score: 0.88,
+        description: "Bãi rác lớn được phát hiện trong hình ảnh",
+        severity: "high",
+        suggested_priority: "high",
+        location_hints: ["khu vực đất trống", "gần khu dân cư"],
+        detected_objects: ["garbage_pile", "plastic", "organic_waste", "land"],
+        model_version: "smart-v1.2",
+        processing_time_ms: 1670,
+        debug_info: {
+          vehicle_count: 0,
+          analysis_breakdown: {
+            vehicles: [],
+            waste_related: ["large_garbage_pile", "mixed_waste", "environmental_hazard"],
+            infrastructure: ["vacant_land"]
+          }
+        }
+      },
     })
   ]);
 
@@ -521,7 +854,7 @@ async function main() {
         completion_percentage: 100,
         completion_image_url: existingImages[8] || null,
         ghi_chu: "Đèn giao thông đã hoạt động bình thường. Kiểm tra toàn bộ hệ thống và thay thế linh kiện hỏng.",
-        ai_priority_score: 68,
+        ai_priority_score: 82,
         ai_estimated_hours: 3.0,
         ai_suggested_skills: "electrical,traffic_systems",
         ai_assignment_reasoning: "AI assigned based on traffic_light classification with 89% match score",
@@ -575,7 +908,7 @@ async function main() {
         noi_dung: "Đã điều tiết giao thông và xử lý tai nạn",
         trang_thai: "hoan_thanh",
         completion_percentage: 100,
-        completion_image_url: null, // Không có ảnh completion cho case này
+        completion_image_url: null,
         ghi_chu: "Tai nạn đã được xử lý, giao thông trở lại bình thường.",
         ai_priority_score: 72,
         ai_estimated_hours: 1.5,
@@ -603,6 +936,74 @@ async function main() {
         timeline_status: "at_risk",
         started_at: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
       },
+    }),
+    prisma.xuLy.create({
+      data: {
+        phan_anh_id: report12.id,
+        can_bo_id: staff6.id,
+        noi_dung: "Đang sửa chữa đường ống nước bị rò rỉ",
+        trang_thai: "dang_xu_ly",
+        completion_percentage: 50,
+        ghi_chu: "Đã tắt van nước chính. Đang tiến hành thay thế đoạn ống hỏng.",
+        ai_priority_score: 78,
+        ai_estimated_hours: 6.0,
+        ai_suggested_skills: "road_repair,drainage",
+        ai_assignment_reasoning: "AI assigned based on water leak detection with 87% match score",
+        timeline_status: "on_time",
+        started_at: new Date(Date.now() - 3 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.xuLy.create({
+      data: {
+        phan_anh_id: report13.id,
+        can_bo_id: staff7.id,
+        noi_dung: "Đang tổ chức thu gom bãi rác tự phát",
+        trang_thai: "dang_xu_ly",
+        completion_percentage: 30,
+        ghi_chu: "Đã triển khai xe và nhân công. Ước tính cần 2 ngày để dọn dẹp hoàn toàn.",
+        ai_priority_score: 80,
+        ai_estimated_hours: 8.0,
+        ai_suggested_skills: "waste_management,environmental,cleaning",
+        ai_assignment_reasoning: "AI assigned based on large waste pile with 91% match score",
+        timeline_status: "on_time",
+        started_at: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.xuLy.create({
+      data: {
+        phan_anh_id: report14.id,
+        can_bo_id: staff4.id,
+        noi_dung: "Đang kiểm tra và gia cố cây cổ thụ",
+        trang_thai: "dang_xu_ly",
+        completion_percentage: 70,
+        ghi_chu: "Đã lắp dựng hệ thống chống đỡ tạm thời. Đang liên hệ chuyên gia đánh giá cây.",
+        ai_priority_score: 98,
+        ai_estimated_hours: 4.0,
+        ai_suggested_skills: "tree_maintenance,emergency_response",
+        ai_assignment_reasoning: "AI assigned based on critical tree hazard with 96% match score",
+        timeline_status: "on_time",
+        started_at: new Date(Date.now() - 2.5 * 60 * 60 * 1000),
+      },
+    }),
+    prisma.xuLy.create({
+      data: {
+        phan_anh_id: report15.id,
+        can_bo_id: staff5.id,
+        noi_dung: "Đã xử lý va chạm và điều tiết giao thông",
+        trang_thai: "hoan_thanh",
+        completion_percentage: 100,
+        completion_image_url: null,
+        ghi_chu: "Va chạm nhỏ, không có thương tích. Đã lập biên bản và giải tỏa giao thông.",
+        ai_priority_score: 35,
+        ai_estimated_hours: 0.5,
+        ai_suggested_skills: "traffic_control",
+        ai_assignment_reasoning: "AI assigned based on minor traffic incident with 82% match score",
+        ai_quality_score: 88,
+        ai_completion_verification: "Va chạm đã được xử lý nhanh chóng",
+        timeline_status: "completed_early",
+        started_at: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
+        completed_at: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      },
     })
   ]);
 
@@ -627,10 +1028,10 @@ async function main() {
         recipient_id: staff1.id,
         type: "assignment_notification", 
         title: "Nhiệm vụ mới được phân công",
-        message: "Bạn được phân công xử lý báo cáo #1: Ổ gà lớn trên đường Lê Lợi",
-        priority: "medium",
+        message: "Bạn được phân công xử lý báo cáo #8: Nắp cống bị mất gây nguy hiểm",
+        priority: "high",
         ai_generated: true,
-        related_id: report1.id,
+        related_id: report8.id,
         related_type: "phan_anh",
       },
     }),
@@ -638,11 +1039,11 @@ async function main() {
       data: {
         recipient_id: staff4.id,
         type: "deadline_warning", 
-        title: "Cảnh báo deadline",
-        message: "Nhiệm vụ #7 sắp đến hạn hoàn thành (còn 2 giờ)",
-        priority: "medium",
+        title: "Cảnh báo khẩn cấp",
+        message: "Nhiệm vụ #14 (cây cổ thụ có nguy cơ đổ) cần xử lý ưu tiên ngay",
+        priority: "critical",
         ai_generated: true,
-        related_id: report7.id,
+        related_id: report14.id,
         related_type: "phan_anh",
       },
     }),
@@ -663,10 +1064,46 @@ async function main() {
         recipient_id: citizen1.id,
         type: "assignment_notification", 
         title: "Báo cáo của bạn đã được tiếp nhận",
-        message: "Báo cáo #1: Ổ gà lớn trên đường Lê Lợi đã được hệ thống tiếp nhận và đang chờ xử lý",
+        message: "Báo cáo #1: Ổ gà lớn trên đường Trần Phú đã được hệ thống tiếp nhận và đang chờ xử lý",
         priority: "low",
         ai_generated: false,
         related_id: report1.id,
+        related_type: "phan_anh",
+      },
+    }),
+    prisma.notification.create({
+      data: {
+        recipient_id: staff6.id,
+        type: "assignment_notification", 
+        title: "Nhiệm vụ mới: Rò rỉ nước máy",
+        message: "Bạn được phân công xử lý #12: Rò rỉ nước máy nghiêm trọng trên đường Hai Bà Trưng",
+        priority: "high",
+        ai_generated: true,
+        related_id: report12.id,
+        related_type: "phan_anh",
+      },
+    }),
+    prisma.notification.create({
+      data: {
+        recipient_id: staff7.id,
+        type: "assignment_notification", 
+        title: "Nhiệm vụ mới: Bãi rác tự phát",
+        message: "Bạn được phân công xử lý #13: Bãi rác tự phát gần cầu Thuận Phước",
+        priority: "medium",
+        ai_generated: true,
+        related_id: report13.id,
+        related_type: "phan_anh",
+      },
+    }),
+    prisma.notification.create({
+      data: {
+        recipient_id: admin.id,
+        type: "system_alert", 
+        title: "Báo cáo khẩn cấp mới",
+        message: "Báo cáo #14 (cây cổ thụ có nguy cơ đổ) được đánh giá mức độ nghiêm trọng 5/5, cần xử lý ngay",
+        priority: "critical",
+        ai_generated: true,
+        related_id: report14.id,
         related_type: "phan_anh",
       },
     })
@@ -690,10 +1127,18 @@ async function main() {
     }),
     prisma.nguoiDung.update({
       where: { id: staff4.id },
-      data: { current_workload: 1 }
+      data: { current_workload: 2 }
     }),
     prisma.nguoiDung.update({
       where: { id: staff5.id },
+      data: { current_workload: 2 }
+    }),
+    prisma.nguoiDung.update({
+      where: { id: staff6.id },
+      data: { current_workload: 1 }
+    }),
+    prisma.nguoiDung.update({
+      where: { id: staff7.id },
       data: { current_workload: 1 }
     })
   ]);
@@ -704,13 +1149,20 @@ async function main() {
   
   console.log("\n🎯 Sample data created:");
   console.log(`👑 Admin: admin@smartreport.ai (password: 123456)`);
-  console.log(`👮 Staff: staff1-5@smartreport.ai (password: 123456)`);
-  console.log(`🙋 Citizens: citizen1-6@gmail.com (password: 123456)`);
-  console.log(`📋 Reports: 8 diverse reports with different types and statuses`);
+  console.log(`👮 Staff: staff1-7@smartreport.ai (password: 123456)`);
+  console.log(`🙋 Citizens: citizen1-10@gmail.com (password: 123456)`);
+  console.log(`📋 Reports: 15 diverse reports with different types and statuses`);
   console.log(`🤖 AI Features: Auto-classification, Smart assignment, Quality assessment`);
   console.log(`🔔 Notifications: AI-generated alerts and assignments`);
-  console.log(`🏙️ Coverage: Multiple districts in Ho Chi Minh City`);
+  console.log(`🏙️ Coverage: All districts in Da Nang city`);
   console.log(`📸 Images: Using existing user avatars and report images`);
+  console.log(`\n📍 Districts covered:`);
+  console.log(`   - Quận Hải Châu (city center)`);
+  console.log(`   - Quận Thanh Khê`);
+  console.log(`   - Quận Sơn Trà`);
+  console.log(`   - Quận Ngũ Hành Sơn`);
+  console.log(`   - Quận Liên Chiểu`);
+  console.log(`   - Quận Cẩm Lệ`);
 }
 
 main()

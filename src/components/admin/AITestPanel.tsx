@@ -47,6 +47,127 @@ const AITestPanel = () => {
     return mapping[type as keyof typeof mapping] || type;
   };
 
+  // Heuristic FE: phân tích thêm dựa trên detected_objects để mô tả "thông minh" hơn
+  type AnalysisResult = {
+    label: string;
+    confidence: number;
+    severity: string;
+    description: string;
+    processing_time_ms: number;
+    model_version: string;
+    detected_objects?: string[];
+  };
+
+  const buildSmartInsights = (analysis: AnalysisResult) => {
+    const objects = analysis.detected_objects || [];
+
+    // Đếm số lượng từng loại object
+    const counts: Record<string, number> = {};
+    objects.forEach((obj) => {
+      const key = obj.toLowerCase();
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    const totalObjects = objects.length;
+    const hasPerson = objects.some((o) =>
+      ["person", "people", "human"].includes(o.toLowerCase())
+    );
+    const hasFireOrSmoke = objects.some((o) =>
+      ["fire", "flame", "smoke"].includes(o.toLowerCase())
+    );
+    const hasVehicle = objects.some((o) =>
+      ["car", "truck", "bus", "motorbike", "motorcycle", "bicycle", "vehicle"].includes(
+        o.toLowerCase()
+      )
+    );
+
+    // Map severity hiện tại sang thang số
+    const severityToNumber: Record<string, number> = {
+      low: 1,
+      medium: 2,
+      high: 3,
+      critical: 4,
+    };
+    const numberToSeverity: Record<number, string> = {
+      1: "low",
+      2: "medium",
+      3: "high",
+      4: "critical",
+    };
+
+    let level = severityToNumber[analysis.severity] ?? 2;
+
+    // Điều chỉnh mức độ dựa trên object
+    if (hasPerson && hasFireOrSmoke) {
+      level = Math.max(level, 4);
+    } else if (hasPerson && hasVehicle) {
+      level = Math.max(level, 3);
+    }
+
+    if (totalObjects >= 5) {
+      level = Math.min(4, level + 1);
+    }
+
+    // Nếu độ tin cậy thấp thì giảm một bậc
+    if (analysis.confidence < 0.6) {
+      level = Math.max(1, level - 1);
+    }
+
+    const smartSeverity = numberToSeverity[level] || analysis.severity;
+
+    // Tạo mô tả tóm tắt từ đối tượng phát hiện
+    const objectSummary =
+      totalObjects > 0
+        ? Object.entries(counts)
+            .map(([name, count]) => `${count} ${name}`)
+            .join(", ")
+        : "";
+
+    let smartDescription = analysis.description || "";
+
+    if (objectSummary) {
+      const prefix = `AI phát hiện ${objectSummary}. `;
+      if (!smartDescription.includes("AI phát hiện")) {
+        smartDescription = `${prefix}${smartDescription}`.trim();
+      }
+    }
+
+    const explanationParts: string[] = [];
+
+    if (hasPerson) {
+      explanationParts.push("Có người xuất hiện trong khu vực sự cố");
+    }
+    if (hasFireOrSmoke) {
+      explanationParts.push("Có dấu hiệu lửa/khói");
+    }
+    if (hasVehicle) {
+      explanationParts.push("Có phương tiện giao thông liên quan");
+    }
+    if (analysis.confidence < 0.6) {
+      explanationParts.push("Độ tin cậy thấp, nên kiểm tra thủ công");
+    } else if (analysis.confidence >= 0.85) {
+      explanationParts.push("Độ tin cậy cao, có thể ưu tiên xử lý");
+    }
+
+    const explanation =
+      explanationParts.length > 0
+        ? explanationParts.join(" • ")
+        : "AI chưa phát hiện thêm điểm bất thường đặc biệt ngoài mô tả ban đầu.";
+
+    return {
+      smartSeverity,
+      smartDescription,
+      explanation,
+      hasPerson,
+      hasFireOrSmoke,
+      hasVehicle,
+      totalObjects,
+    };
+  };
+
+  const analysisData = analyzeImage.data?.analysis as AnalysisResult | undefined;
+  const smartInsights = analysisData ? buildSmartInsights(analysisData) : null;
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-700">
       <div className="mb-6">
@@ -149,7 +270,7 @@ const AITestPanel = () => {
       </div>
 
       {/* Kết quả phân tích */}
-      {analyzeImage.data && (
+      {analysisData && smartInsights && (
         <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 
                       rounded-lg p-5 border border-green-200 dark:border-gray-600">
           <h4 className="font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
@@ -161,7 +282,7 @@ const AITestPanel = () => {
                 <strong className="text-gray-700 dark:text-gray-300">Loại sự cố:</strong>
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 
                               rounded-full text-sm font-medium">
-                  {getIncidentTypeText(analyzeImage.data.analysis.label)}
+                  {getIncidentTypeText(analysisData.label)}
                 </span>
               </div>
               
@@ -171,11 +292,11 @@ const AITestPanel = () => {
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-green-600 h-2 rounded-full transition-all duration-500"
-                      style={{width: `${analyzeImage.data.analysis.confidence * 100}%`}}
+                      style={{width: `${analysisData.confidence * 100}%`}}
                     ></div>
                   </div>
                   <span className="text-sm font-medium text-green-600">
-                    {(analyzeImage.data.analysis.confidence * 100).toFixed(1)}%
+                    {(analysisData.confidence * 100).toFixed(1)}%
                   </span>
                 </div>
               </div>
@@ -183,12 +304,12 @@ const AITestPanel = () => {
               <div className="flex items-center gap-2">
                 <strong className="text-gray-700 dark:text-gray-300">Mức độ nghiêm trọng:</strong>
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  analyzeImage.data.analysis.severity === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                  analyzeImage.data.analysis.severity === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' :
-                  analyzeImage.data.analysis.severity === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                  smartInsights.smartSeverity === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                  smartInsights.smartSeverity === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' :
+                  smartInsights.smartSeverity === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
                   'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                 }`}>
-                  {getSeverityText(analyzeImage.data.analysis.severity)}
+                  {getSeverityText(smartInsights.smartSeverity)}
                 </span>
               </div>
             </div>
@@ -197,7 +318,7 @@ const AITestPanel = () => {
               <div>
                 <strong className="text-gray-700 dark:text-gray-300">Mô tả chi tiết:</strong>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 p-2 bg-white dark:bg-gray-800 rounded">
-                  {analyzeImage.data.analysis.description}
+                  {smartInsights.smartDescription}
                 </p>
               </div>
 
@@ -205,22 +326,22 @@ const AITestPanel = () => {
                 <div className="bg-white dark:bg-gray-800 p-2 rounded">
                   <strong>Thời gian xử lý:</strong><br/>
                   <span className="text-blue-600 dark:text-blue-400">
-                    {analyzeImage.data.analysis.processing_time_ms}ms
+                    {analysisData.processing_time_ms}ms
                   </span>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-2 rounded">
                   <strong>Phiên bản model:</strong><br/>
                   <span className="text-green-600 dark:text-green-400">
-                    {analyzeImage.data.analysis.model_version}
+                    {analysisData.model_version}
                   </span>
                 </div>
               </div>
 
-              {analyzeImage.data.analysis.detected_objects?.length > 0 && (
+              {analysisData.detected_objects?.length > 0 && (
                 <div>
                   <strong className="text-gray-700 dark:text-gray-300">Đối tượng phát hiện:</strong>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {analyzeImage.data.analysis.detected_objects.map((obj: string, index: number) => (
+                    {analysisData.detected_objects.map((obj: string, index: number) => (
                       <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 
                                                    rounded text-xs">
                         {obj}
@@ -229,6 +350,21 @@ const AITestPanel = () => {
                   </div>
                 </div>
               )}
+
+              {/* Giải thích heuristic từ FE để người dùng hiểu hơn */}
+              <div className="mt-3 bg-white/60 dark:bg-gray-800/60 border border-dashed border-blue-200 dark:border-blue-700 rounded p-3 text-xs">
+                <div className="font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-1">
+                  🧠 Gợi ý thông minh từ đối tượng phát hiện
+                </div>
+                <p className="mt-1 text-blue-700 dark:text-blue-200">
+                  {smartInsights.explanation}
+                </p>
+                {smartInsights.totalObjects > 0 && (
+                  <p className="mt-1 text-[11px] text-blue-500 dark:text-blue-300">
+                    (Mức độ nghiêm trọng có thể được điều chỉnh dựa trên số lượng người/phương tiện/lửa, chỉ xử lý trên giao diện – không thay đổi kết quả gốc của model.)
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

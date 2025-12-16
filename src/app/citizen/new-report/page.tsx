@@ -5,6 +5,7 @@ import { useToast } from "@/context/ToastContext";
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Upload, AlertCircle, CheckCircle } from "lucide-react";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { useAnalyzeImageFile } from "@/hooks/useAI";
 
 interface ReportForm {
   tieu_de: string;
@@ -26,6 +27,9 @@ const ISSUE_TYPES = [
   { value: "other", label: "Khác" },
 ];
 
+const getIssueLabel = (value: string) =>
+  ISSUE_TYPES.find((t) => t.value === value)?.label || "khác";
+
 export default function NewReportPage() {
   const { user } = useAuthStore();
   const { success: showSuccess, error: showError } = useToast();
@@ -39,6 +43,9 @@ export default function NewReportPage() {
   const markerRef = useRef<any>(null);
   const mapboxglRef = useRef<any>(null);
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiAnalyzed, setAiAnalyzed] = useState(false);
+  const analyzeImage = useAnalyzeImageFile();
 
   const [form, setForm] = useState<ReportForm>({
     tieu_de: "",
@@ -250,6 +257,52 @@ export default function NewReportPage() {
       setForm((prev) => ({ ...prev, hinh_anh_url: base64 }));
     };
     reader.readAsDataURL(file);
+
+    // Gọi AI để phân tích ảnh và tự điền thông tin gợi ý
+    setAiAnalyzing(true);
+    setAiAnalyzed(false);
+    analyzeImage.mutate(file, {
+      onSuccess: (res: any) => {
+        const analysis = res?.analysis;
+        if (!analysis) {
+          setAiAnalyzing(false);
+          return;
+        }
+
+        const severityMap: Record<string, number> = {
+          critical: 5,
+          high: 4,
+          medium: 3,
+          low: 2,
+        };
+
+        setForm((prev) => ({
+          ...prev,
+          loai_su_co: analysis.label || prev.loai_su_co || "other",
+          tieu_de:
+            prev.tieu_de ||
+            `Sự cố ${getIssueLabel(analysis.label || "other")}`,
+          mo_ta:
+            prev.mo_ta ||
+            analysis.description ||
+            "AI đã phát hiện sự cố trong hình ảnh. Vui lòng kiểm tra và chỉnh sửa mô tả chi tiết nếu cần.",
+          muc_do_nghiem_trong:
+            severityMap[analysis.severity] ??
+            prev.muc_do_nghiem_trong ??
+            3,
+        }));
+
+        setAiAnalyzing(false);
+        setAiAnalyzed(true);
+      },
+      onError: (err: any) => {
+        console.error("AI analyze error", err);
+        setAiAnalyzing(false);
+        showError(
+          "AI phân tích ảnh thất bại, bạn vẫn có thể nhập thông tin thủ công."
+        );
+      },
+    });
   };
 
   const handleGetLocation = async () => {
@@ -389,7 +442,7 @@ export default function NewReportPage() {
           Gửi phản ánh
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Báo cáo sự cố hoặc vấn đề tại khu vực của bạn
+          Bước 1: Chụp/tải ảnh sự cố để AI gợi ý thông tin. Bước 2: Kiểm tra lại mô tả và vị trí trước khi gửi.
         </p>
       </div>
 
@@ -401,7 +454,88 @@ export default function NewReportPage() {
           </div>
         )}
 
+        {/* Bước 1: Hình ảnh + AI */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-gray-900/60">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            1️⃣ Ảnh sự cố (AI sẽ hỗ trợ phân tích)
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Tải ảnh rõ nét của sự cố. AI sẽ gợi ý loại sự cố, tiêu đề, mô tả và mức độ – bạn vẫn có thể chỉnh sửa lại.
+          </p>
+
+          <div className="space-y-4">
+            <div
+              onClick={() => imageInputRef.current?.click()}
+              className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-green-500 dark:border-white/[0.12] dark:hover:border-green-500 transition-colors"
+            >
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={isLoading}
+                className="hidden"
+              />
+
+              {imagePreview ? (
+                <div className="space-y-3">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="h-32 w-32 object-cover rounded-lg mx-auto"
+                  />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Nhấp để thay đổi ảnh
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Upload className="w-10 h-10 text-gray-400 mx-auto" />
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nhấp để chọn ảnh
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Tối đa 5MB
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {aiAnalyzing && (
+              <div className="mt-2 flex items-center gap-2 text-xs text-green-700 dark:text-green-300">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600" />
+                AI đang phân tích ảnh và đề xuất loại sự cố, mức độ, mô tả...
+              </div>
+            )}
+
+            {!aiAnalyzing && aiAnalyzed && (
+              <div className="mt-2 text-xs text-green-700 dark:text-green-300">
+                ✅ AI đã tự động điền gợi ý (loại sự cố, tiêu đề, mô tả, mức độ). Bạn có thể chỉnh sửa trước khi gửi.
+              </div>
+            )}
+
+            {imagePreview && (
+              <button
+                type="button"
+                onClick={() => {
+                  setImagePreview(null);
+                  setForm((prev) => ({ ...prev, hinh_anh_url: null }));
+                  if (imageInputRef.current) imageInputRef.current.value = "";
+                }}
+                disabled={isLoading}
+                className="w-full px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-900/20 font-medium transition-colors disabled:opacity-50"
+              >
+                Xóa ảnh
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Bước 2: Thông tin sự cố */}
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-gray-900/60">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            2️⃣ Thông tin sự cố
+          </h3>
           <div className="space-y-4">
             {/* Tiêu đề */}
             <div>
@@ -475,7 +609,7 @@ export default function NewReportPage() {
                 <option value={5}>5 - Khẩn cấp</option>
               </select>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Chọn mức độ nghiêm trọng trùng với quy ước của quản trị viên.
+                Bạn có thể giữ mức AI gợi ý hoặc tự điều chỉnh cho phù hợp.
               </p>
             </div>
           </div>
@@ -484,7 +618,7 @@ export default function NewReportPage() {
         {/* Vị trí */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-gray-900/60">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Vị trí sự cố
+            3️⃣ Vị trí sự cố
           </h3>
 
           <div className="space-y-4">
@@ -579,66 +713,7 @@ export default function NewReportPage() {
           </div>
         </div>
 
-        {/* Hình ảnh */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/[0.08] dark:bg-gray-900/60">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Hình ảnh minh chứng
-          </h3>
-
-          <div className="space-y-4">
-            <div
-              onClick={() => imageInputRef.current?.click()}
-              className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-green-500 dark:border-white/[0.12] dark:hover:border-green-500 transition-colors"
-            >
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                disabled={isLoading}
-                className="hidden"
-              />
-
-              {imagePreview ? (
-                <div className="space-y-3">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="h-32 w-32 object-cover rounded-lg mx-auto"
-                  />
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Nhấp để thay đổi ảnh
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Upload className="w-10 h-10 text-gray-400 mx-auto" />
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Nhấp để chọn ảnh
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Tối đa 5MB
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {imagePreview && (
-              <button
-                type="button"
-                onClick={() => {
-                  setImagePreview(null);
-                  setForm((prev) => ({ ...prev, hinh_anh_url: null }));
-                  if (imageInputRef.current) imageInputRef.current.value = "";
-                }}
-                disabled={isLoading}
-                className="w-full px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-900/20 font-medium transition-colors disabled:opacity-50"
-              >
-                Xóa ảnh
-              </button>
-            )}
-          </div>
-        </div>
+       
 
         {/* Submit */}
         <div className="flex gap-3">

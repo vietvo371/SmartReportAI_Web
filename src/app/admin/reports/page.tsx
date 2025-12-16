@@ -5,6 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { AlertTriangle, Clock, CheckCircle, MapPin, User, Calendar, Filter, Search, Plus, Trash2, Edit3, UserPlus, Eye } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/context/ToastContext";
+import { useAnalyzeImageFile } from "@/hooks/useAI";
 
 interface Report {
   id: number;
@@ -32,6 +33,9 @@ export default function ReportsPage() {
     search: "",
   });
   const [createOpen, setCreateOpen] = useState(false);
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiAnalyzed, setAiAnalyzed] = useState(false);
+  const [showCreateGuide, setShowCreateGuide] = useState(true);
   const [creating, setCreating] = useState(false);
   const [users, setUsers] = useState<Array<{ id: number; ho_ten: string; email: string; vai_tro: string }>>([]);
   const [editOpen, setEditOpen] = useState(false);
@@ -57,6 +61,7 @@ export default function ReportsPage() {
   });
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const analyzeImage = useAnalyzeImageFile();
   const mapRef = useRef<any>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const markerRef = useRef<any>(null);
@@ -292,9 +297,9 @@ export default function ReportsPage() {
     }
   };
 
-  // Init mini Mapbox picker when modal opens
+  // Init mini Mapbox picker khi modal mở VÀ đang ở bước nhập form (không phải màn hướng dẫn)
   useEffect(() => {
-    if (!createOpen) return;
+    if (!createOpen || showCreateGuide) return;
     (async () => {
       const mapboxgl = (await import('mapbox-gl')).default;
       const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
@@ -330,7 +335,7 @@ export default function ReportsPage() {
         markerRef.current = null;
       }
     };
-  }, [createOpen]);
+  }, [createOpen, showCreateGuide]);
 
   const getStatusIcon = (status: string) => {
     const s = normalizeStatus(status);
@@ -452,7 +457,13 @@ export default function ReportsPage() {
       {/* Actions & Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex flex-wrap gap-4 items-end justify-between">
-          <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+          <button
+            onClick={() => {
+              setShowCreateGuide(true);
+              setCreateOpen(true);
+            }}
+            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+          >
             <Plus className="w-4 h-4" />
             Tạo sự cố
           </button>
@@ -511,150 +522,274 @@ export default function ReportsPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Loại sự cố
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Mô tả
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Vị trí
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Mức độ
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Người báo cáo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Thời gian
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredReports.map((report) => (
-                <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    #{report.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    {getLoaiSuCoText((report as any).loai_su_co)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 max-w-xs">
-                    <p className="truncate" title={report.mo_ta}>
-                      {report.mo_ta}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 mt-1 shrink-0" />
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                          {(report as any).dia_chi || (report as any).vi_tri || "—"}
+            <>
+              {/* Bảng cho màn hình md trở lên */}
+              <table className="hidden w-full md:table">
+                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Loại sự cố
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Mô tả
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Vị trí
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Trạng thái
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Mức độ
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Người báo cáo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Thời gian
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Hành động
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredReports.map((report) => (
+                    <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        #{report.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                        {getLoaiSuCoText((report as any).loai_su_co)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 max-w-xs">
+                        <p className="truncate" title={report.mo_ta}>
+                          {report.mo_ta}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 mt-1 shrink-0" />
+                          <div className="space-y-1">
+                            <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                              {(report as any).dia_chi || (report as any).vi_tri || "—"}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {(() => {
+                                const lat = (report as any).vi_do as number | undefined;
+                                const lng = (report as any).kinh_do as number | undefined;
+                                if (typeof lat === 'number' && typeof lng === 'number') {
+                                  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                                }
+                                return "Chưa có tọa độ";
+                              })()}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {(() => {
-                            const lat = (report as any).vi_do as number | undefined;
-                            const lng = (report as any).kinh_do as number | undefined;
-                            if (typeof lat === 'number' && typeof lng === 'number') {
-                              return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                            }
-                            return "Chưa có tọa độ";
-                          })()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(report.trang_thai)}
+                          <span className="text-sm">{getStatusText(report.trang_thai)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {(() => {
+                          const severity = (report as any).muc_do_uu_tien || ((): string => {
+                            const n = (report as any).muc_do_nghiem_trong as number | undefined;
+                            if (typeof n !== "number") return "Thấp";
+                            if (n >= 5) return "Khẩn cấp";
+                            if (n >= 4) return "Rất cao";
+                            if (n >= 3) return "Cao";
+                            if (n >= 2) return "Trung bình";
+                            return "Thấp";
+                          })();
+                          return (
+                            <span className={`px-2 py-1 text-xs rounded-full border ${getPriorityColor(severity)}`}>
+                              {severity}
+                            </span>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                        <div className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          {((report as any)?.nguoiDung?.ho_ten as string) || ((report as any)?.nguoi_dung?.ho_ten as string) || "Không xác định"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {formatDate((report as any).thoi_gian_tao || (report as any).created_at)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300 text-right relative">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            title="Chi tiết"
+                            onClick={() => {
+                              setDetailTarget(report);
+                              setDetailOpen(true);
+                            }}
+                            className="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            title="Chỉnh sửa"
+                            onClick={() => {
+                              setEditTarget(report);
+                              setEditForm({
+                                trang_thai: (report as any).trang_thai || 'cho_xu_ly',
+                                muc_do_nghiem_trong: String((report as any).muc_do_nghiem_trong ?? '3'),
+                                assign_can_bo_id: '',
+                                ghi_chu: '',
+                              });
+                              setEditOpen(true);
+                            }}
+                            className="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            title="Xóa"
+                            onClick={() => { setDeleteTarget(report); setDeleteOpen(true); }}
+                            className="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-gray-700 text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        {/* Popover removed -> replaced by modal below */}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Dạng thẻ cho màn hình nhỏ */}
+              <div className="md:hidden space-y-3">
+                {filteredReports.map((report) => (
+                  <div
+                    key={report.id}
+                    className="mx-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900/60"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            #{report.id}
+                          </span>
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                            {getLoaiSuCoText((report as any).loai_su_co)}
+                          </span>
+                        </div>
+                        <p className="mt-1 line-clamp-2 text-sm text-gray-600 dark:text-gray-300">
+                          {report.mo_ta || "Không có mô tả"}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(report.trang_thai)}
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
+                            {getStatusText(report.trang_thai)}
+                          </span>
+                        </div>
+                        {(() => {
+                          const severity = (report as any).muc_do_uu_tien || ((): string => {
+                            const n = (report as any).muc_do_nghiem_trong as number | undefined;
+                            if (typeof n !== "number") return "Thấp";
+                            if (n >= 5) return "Khẩn cấp";
+                            if (n >= 4) return "Rất cao";
+                            if (n >= 3) return "Cao";
+                            if (n >= 2) return "Trung bình";
+                            return "Thấp";
+                          })();
+                          return (
+                            <span className={`px-2 py-0.5 text-[11px] rounded-full border ${getPriorityColor(severity)}`}>
+                              {severity}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 space-y-1 text-xs text-gray-600 dark:text-gray-300">
+                      <div className="flex items-start gap-2">
+                        <MapPin className="mt-0.5 h-3.5 w-3.5" />
+                        <span className="flex-1">
+                          {(report as any).dia_chi || (report as any).vi_tri || "Chưa có địa chỉ"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <User className="h-3.5 w-3.5" />
+                          <span>
+                            {((report as any)?.nguoiDung?.ho_ten as string) ||
+                              ((report as any)?.nguoi_dung?.ho_ten as string) ||
+                              "Không xác định"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>
+                            {formatDate(
+                              (report as any).thoi_gian_tao || (report as any).created_at
+                            )}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(report.trang_thai)}
-                      <span className="text-sm">{getStatusText(report.trang_thai)}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {(() => {
-                      const severity = (report as any).muc_do_uu_tien || ((): string => {
-                        const n = (report as any).muc_do_nghiem_trong as number | undefined;
-                        if (typeof n !== "number") return "Thấp";
-                        if (n >= 5) return "Khẩn cấp";
-                        if (n >= 4) return "Rất cao";
-                        if (n >= 3) return "Cao";
-                        if (n >= 2) return "Trung bình";
-                        return "Thấp";
-                      })();
-                      return (
-                        <span className={`px-2 py-1 text-xs rounded-full border ${getPriorityColor(severity)}`}>
-                          {severity}
-                        </span>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      {((report as any)?.nguoiDung?.ho_ten as string) || ((report as any)?.nguoi_dung?.ho_ten as string) || "Không xác định"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {formatDate((report as any).thoi_gian_tao || (report as any).created_at)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300 text-right relative">
-                    <div className="inline-flex items-center gap-2">
+
+                    <div className="mt-3 flex items-center justify-end gap-2">
                       <button
                         title="Chi tiết"
                         onClick={() => {
                           setDetailTarget(report);
                           setDetailOpen(true);
                         }}
-                        className="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="flex items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="h-3.5 w-3.5" />
+                        Xem
                       </button>
                       <button
                         title="Chỉnh sửa"
                         onClick={() => {
                           setEditTarget(report);
                           setEditForm({
-                            trang_thai: (report as any).trang_thai || 'cho_xu_ly',
-                            muc_do_nghiem_trong: String((report as any).muc_do_nghiem_trong ?? '3'),
-                            assign_can_bo_id: '',
-                            ghi_chu: '',
+                            trang_thai: (report as any).trang_thai || "cho_xu_ly",
+                            muc_do_nghiem_trong: String(
+                              (report as any).muc_do_nghiem_trong ?? "3"
+                            ),
+                            assign_can_bo_id: "",
+                            ghi_chu: "",
                           });
                           setEditOpen(true);
                         }}
-                        className="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        className="flex items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
                       >
-                        <Edit3 className="w-4 h-4" />
+                        <Edit3 className="h-3.5 w-3.5" />
+                        Sửa
                       </button>
                       <button
                         title="Xóa"
-                        onClick={() => { setDeleteTarget(report); setDeleteOpen(true); }}
-                        className="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-gray-700 text-red-600"
+                        onClick={() => {
+                          setDeleteTarget(report);
+                          setDeleteOpen(true);
+                        }}
+                        className="flex items-center gap-1 rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Xóa
                       </button>
                     </div>
-                    {/* Popover removed -> replaced by modal below */}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
           {!isLoading && filteredReports.length === 0 && (
             <div className="text-center py-12">
@@ -670,109 +805,236 @@ export default function ReportsPage() {
       {/* Create Modal */}
       <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} className="max-w-[900px] p-0">
         <div className="p-6 lg:p-8 max-h-[80vh] overflow-y-auto">
-          <div className="mb-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Tạo sự cố mới</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Chọn vị trí trên bản đồ, nhập thông tin và đính kèm ảnh</p>
-          </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Người dùng</label>
-                <select
-                  value={form.nguoi_dung_id}
-                  onChange={(e) => setForm({ ...form, nguoi_dung_id: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+          {showCreateGuide ? (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Hướng dẫn tạo sự cố bằng AI</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Chỉ cần tải lên ảnh sự cố, AI sẽ tự phân tích và điền thông tin. Bạn có thể chỉnh sửa lại sau khi AI hoàn tất.
+              </p>
+              <ul className="text-sm text-gray-700 dark:text-gray-200 list-disc pl-5 space-y-1">
+                <li>Tải ảnh rõ nét của sự cố (định dạng JPG/PNG/WEBP).</li>
+                <li>AI sẽ nhận dạng loại sự cố, vị trí (nếu có metadata) và gợi ý mức độ.</li>
+                <li>Sau khi AI điền, bạn có thể sửa lại tiêu đề, mô tả, mức độ, vị trí.</li>
+              </ul>
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setCreateOpen(false);
+                  }}
+                  className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600"
                 >
-                  <option value="">-- Chọn người dùng (nguoi_dan) --</option>
-                  {users.map(u => (
-                    <option key={u.id} value={u.id.toString()}>{u.ho_ten} ({u.email})</option>
-                  ))}
-                </select>
+                  Đóng
+                </button>
+                <button
+                  onClick={() => setShowCreateGuide(false)}
+                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Hiểu rồi, nhập thông tin
+                </button>
               </div>
-              <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Loại sự cố</label>
-                <select value={form.loai_su_co} onChange={(e) => setForm({ ...form, loai_su_co: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white">
-                  <option value="pothole">Ổ gà</option>
-                  <option value="flooding">Ngập lụt</option>
-                  <option value="traffic_light">Đèn giao thông</option>
-                  <option value="waste">Rác thải</option>
-                  <option value="traffic_jam">Kẹt xe</option>
-                  <option value="other">Khác</option>
-                </select>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Tạo sự cố mới</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Tải ảnh sự cố để AI tự phân tích và điền thông tin. Bạn có thể chỉnh sửa trước khi lưu.
+                </p>
               </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Tiêu đề</label>
-                <input value={form.tieu_de} onChange={(e) => setForm({ ...form, tieu_de: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Mô tả</label>
-                <textarea value={form.mo_ta} onChange={(e) => setForm({ ...form, mo_ta: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">Chọn vị trí trên bản đồ (click để đặt điểm)</label>
-                <div ref={mapContainerRef} className="w-full h-64 rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden" />
-                <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Vĩ độ</label>
-                    <input value={form.vi_do} readOnly className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Kinh độ</label>
-                    <input value={form.kinh_do} readOnly className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300" />
-                  </div>
-                  <div className="flex flex-col justify-end">
-                    <span className="text-xs text-gray-500 mb-1">Trạng thái địa chỉ</span>
-                    <span className="text-xs text-gray-700 dark:text-gray-300">
-                      {form.dia_chi
-                        ? "Đã lấy địa chỉ"
-                        : isResolvingAddress
-                        ? "Đang xác định địa chỉ..."
-                        : "Chưa có địa chỉ"}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Địa chỉ (tự động)</label>
-                  <textarea
-                    value={form.dia_chi}
-                    onChange={(e) => setForm((prev) => ({ ...prev, dia_chi: e.target.value }))}
-                    placeholder="Địa chỉ sẽ được điền khi bạn chọn vị trí trên bản đồ"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    rows={2}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Bước 1: Tải ảnh để AI phân tích */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
+                    1️⃣ Ảnh sự cố (AI sẽ phân tích tự động từ ảnh này)
+                  </label>
+                  <input
+                    value={form.hinh_anh_url}
+                    onChange={(e) => setForm({ ...form, hinh_anh_url: e.target.value })}
+                    placeholder="https://..."
+                    className="w-full mb-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
                   />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setSelectedFile(file);
+                      setAiAnalyzed(false);
+                      setAiAnalyzing(true);
+                      analyzeImage.mutate(file, {
+                        onSuccess: (res: any) => {
+                          const analysis = res?.analysis;
+                          if (!analysis) {
+                            setAiAnalyzing(false);
+                            return;
+                          }
+
+                          // Map severity từ AI sang thang 1-5
+                          const severityMap: Record<string, string> = {
+                            critical: "5",
+                            high: "4",
+                            medium: "3",
+                            low: "2",
+                          };
+
+                          setForm((prev) => ({
+                            ...prev,
+                            loai_su_co: analysis.label || prev.loai_su_co || "other",
+                            tieu_de:
+                              prev.tieu_de ||
+                              `Sự cố ${getLoaiSuCoText(analysis.label || "other")}`,
+                            mo_ta:
+                              prev.mo_ta ||
+                              analysis.description ||
+                              "AI đã phát hiện sự cố trong hình ảnh. Vui lòng kiểm tra và chỉnh sửa mô tả chi tiết nếu cần.",
+                            muc_do_nghiem_trong:
+                              severityMap[analysis.severity] ||
+                              prev.muc_do_nghiem_trong ||
+                              "3",
+                          }));
+                          setAiAnalyzing(false);
+                          setAiAnalyzed(true);
+                        },
+                        onError: (err: any) => {
+                          console.error("AI analyze error", err);
+                          setAiAnalyzing(false);
+                          toastError(
+                            "AI phân tích ảnh thất bại, vui lòng nhập thông tin thủ công hoặc thử lại."
+                          );
+                        },
+                      });
+                    }}
+                    className="block w-full text-sm text-gray-600 dark:text-gray-300"
+                  />
+                  {(selectedFile || form.hinh_anh_url) && (
+                    <div className="mt-2">
+                      <img
+                        src={selectedFile ? URL.createObjectURL(selectedFile) : form.hinh_anh_url}
+                        alt="preview"
+                        className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Ảnh sẽ được tải lên thư mục public/uploads/reports và lưu URL.
+                      </p>
+                    </div>
+                  )}
+                  {/* Trạng thái AI giả lập */}
+                  {aiAnalyzing && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-blue-600 dark:text-blue-300">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600" />
+                      AI đang phân tích ảnh và đề xuất thông tin sự cố...
+                    </div>
+                  )}
+                  {!aiAnalyzing && aiAnalyzed && (
+                    <div className="mt-2 text-xs text-green-600 dark:text-green-300">
+                      ✅ AI đã tự động điền gợi ý (loại sự cố, tiêu đề, mô tả, mức độ). Bạn có thể chỉnh sửa trước khi lưu.
+                    </div>
+                  )}
+                </div>
+
+                {/* Bước 2: Thông tin chi tiết (có thể sửa sau khi AI điền) */}
+                <div>
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Người dùng</label>
+                  <select
+                    value={form.nguoi_dung_id}
+                    onChange={(e) => setForm({ ...form, nguoi_dung_id: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">-- Chọn người dùng (nguoi_dan) --</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id.toString()}>{u.ho_ten} ({u.email})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Loại sự cố</label>
+                  <select
+                    value={form.loai_su_co}
+                    onChange={(e) => setForm({ ...form, loai_su_co: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="pothole">Ổ gà</option>
+                    <option value="flooding">Ngập lụt</option>
+                    <option value="traffic_light">Đèn giao thông</option>
+                    <option value="waste">Rác thải</option>
+                    <option value="traffic_jam">Kẹt xe</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Tiêu đề</label>
+                  <input value={form.tieu_de} onChange={(e) => setForm({ ...form, tieu_de: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Mô tả</label>
+                  <textarea value={form.mo_ta} onChange={(e) => setForm({ ...form, mo_ta: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    Chọn vị trí trên bản đồ (AI chỉ hỗ trợ nội dung ảnh, vị trí vẫn cần chọn tay)
+                  </label>
+                  <div ref={mapContainerRef} className="w-full h-64 rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden" />
+                  <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Vĩ độ</label>
+                      <input value={form.vi_do} readOnly className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Kinh độ</label>
+                      <input value={form.kinh_do} readOnly className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300" />
+                    </div>
+                    <div className="flex flex-col justify-end">
+                      <span className="text-xs text-gray-500 mb-1">Trạng thái địa chỉ</span>
+                      <span className="text-xs text-gray-700 dark:text-gray-300">
+                        {form.dia_chi
+                          ? "Đã lấy địa chỉ"
+                          : isResolvingAddress
+                          ? "Đang xác định địa chỉ..."
+                          : "Chưa có địa chỉ"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Địa chỉ (tự động)</label>
+                    <textarea
+                      value={form.dia_chi}
+                      onChange={(e) => setForm((prev) => ({ ...prev, dia_chi: e.target.value }))}
+                      placeholder="Địa chỉ sẽ được điền khi bạn chọn vị trí trên bản đồ"
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Mức độ nghiêm trọng</label>
+                  <select value={form.muc_do_nghiem_trong} onChange={(e) => setForm({ ...form, muc_do_nghiem_trong: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white">
+                    <option value="1">1 - Thấp</option>
+                    <option value="2">2 - Trung bình</option>
+                    <option value="3">3 - Cao (Tính toán AI)</option>
+                    <option value="4">4 - Rất cao</option>
+                    <option value="5">5 - Khẩn cấp</option>
+                  </select>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Ảnh (URL hoặc chụp/ chọn ảnh)</label>
-                <input value={form.hinh_anh_url} onChange={(e) => setForm({ ...form, hinh_anh_url: e.target.value })} placeholder="https://..." className="w-full mb-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white" />
-                <input type="file" accept="image/*" capture="environment" onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  setSelectedFile(file);
-                }} className="block w-full text-sm text-gray-600 dark:text-gray-300" />
-                {(selectedFile || form.hinh_anh_url) && (
-                  <div className="mt-2">
-                    <img src={selectedFile ? URL.createObjectURL(selectedFile) : form.hinh_anh_url} alt="preview" className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ảnh sẽ được tải lên thư mục public/uploads/reports và lưu URL.</p>
-                  </div>
-                )}
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <button
+                  onClick={() => setShowCreateGuide(true)}
+                  className="px-4 py-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300"
+                >
+                  ← Xem lại hướng dẫn
+                </button>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setCreateOpen(false)} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600">Hủy</button>
+                  <button onClick={createReport} disabled={creating} className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white disabled:opacity-60">
+                    {creating ? 'Đang lưu...' : 'Tạo mới'}
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Mức độ nghiêm trọng</label>
-                <select value={form.muc_do_nghiem_trong} onChange={(e) => setForm({ ...form, muc_do_nghiem_trong: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white">
-                  <option value="1">1 - Thấp</option>
-                  <option value="2">2 - Trung bình</option>
-                  <option value="3">3 - Cao (Tính toán AI)</option>
-                  <option value="4">4 - Rất cao</option>
-                  <option value="5">5 - Khẩn cấp</option>
-                </select>
-              </div>
-            </div>
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button onClick={() => setCreateOpen(false)} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600">Hủy</button>
-              <button onClick={createReport} disabled={creating} className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white disabled:opacity-60">
-                {creating ? 'Đang lưu...' : 'Tạo mới'}
-              </button>
-            </div>
+            </>
+          )}
         </div>
       </Modal>
 
