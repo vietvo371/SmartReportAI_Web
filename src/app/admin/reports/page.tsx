@@ -1123,6 +1123,95 @@ export default function ReportsPage() {
                 </div>
               </div>
 
+              {/* Processing History with Evidence */}
+              {(() => {
+                const xuLys = (detailTarget as any).xu_lys as any[] | undefined;
+                if (!xuLys || xuLys.length === 0) return null;
+                
+                return (
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      Lịch sử xử lý ({xuLys.length})
+                    </h4>
+                    <div className="space-y-4">
+                      {xuLys.map((xuLy: any) => {
+                        // Parse evidence files (can be string or JSON array)
+                        let evidenceFiles: string[] = [];
+                        if (xuLy.hinh_anh_minh_chung) {
+                          try {
+                            const parsed = JSON.parse(xuLy.hinh_anh_minh_chung);
+                            evidenceFiles = Array.isArray(parsed) ? parsed : [xuLy.hinh_anh_minh_chung];
+                          } catch {
+                            evidenceFiles = [xuLy.hinh_anh_minh_chung];
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={xuLy.id}
+                            className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3"
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                    xuLy.trang_thai_moi === 'da_hoan_tat' 
+                                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200'
+                                      : xuLy.trang_thai_moi === 'dang_xu_ly'
+                                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200'
+                                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200'
+                                  }`}>
+                                    {getStatusText(xuLy.trang_thai_moi || xuLy.trang_thai)}
+                                  </span>
+                                </div>
+                                {xuLy.noi_dung && (
+                                  <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                                    {xuLy.noi_dung}
+                                  </p>
+                                )}
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                  {xuLy.can_bo ? `Bởi ${xuLy.can_bo.ho_ten}` : 'Không xác định'} • {formatDate(xuLy.thoi_gian)}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Evidence Images */}
+                            {evidenceFiles.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                  Minh chứng ({evidenceFiles.length} {evidenceFiles.length === 1 ? 'file' : 'files'})
+                                </p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                  {evidenceFiles.map((fileUrl: string, idx: number) => (
+                                    <a
+                                      key={idx}
+                                      href={fileUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="relative group"
+                                    >
+                                      <img
+                                        src={fileUrl}
+                                        alt={`Minh chứng ${idx + 1}`}
+                                        className="w-full h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-80 transition-opacity"
+                                      />
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-lg transition-opacity flex items-center justify-center">
+                                        <Eye className="h-4 w-4 text-white opacity-0 group-hover:opacity-100" />
+                                      </div>
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Title & description */}
               <div>
                 <div className="text-gray-500">Tiêu đề</div>

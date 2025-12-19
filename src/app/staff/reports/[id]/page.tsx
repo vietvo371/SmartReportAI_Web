@@ -19,6 +19,9 @@ import {
   Edit3,
   BarChart3,
   Star,
+  Camera,
+  Upload,
+  Trash,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/context/ToastContext";
@@ -120,6 +123,11 @@ export default function StaffReportDetailPage() {
     noi_dung: "",
   });
   const [updating, setUpdating] = useState(false);
+  const [uploadEvidenceModalOpen, setUploadEvidenceModalOpen] = useState(false);
+  const [evidenceFiles, setEvidenceFiles] = useState<{ name: string; url: string }[]>([]);
+  const [evidenceDescription, setEvidenceDescription] = useState("");
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [submittingEvidence, setSubmittingEvidence] = useState(false);
 
   const fetchReport = useCallback(async () => {
     try {
@@ -205,6 +213,84 @@ export default function StaffReportDetailPage() {
     }
   };
 
+  const handleEvidenceFilesSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(event.target.files ?? []);
+    if (selected.length === 0) return;
+    setUploadingFiles(true);
+    try {
+      const uploads: { name: string; url: string }[] = [];
+      for (const file of selected) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folder", "reports");
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const payload = await res.json().catch(() => ({}));
+          throw new Error(payload.error || "Không thể tải tệp lên.");
+        }
+        const data = await res.json();
+        uploads.push({ name: file.name, url: data.url });
+      }
+      setEvidenceFiles((prev) => [...prev, ...uploads]);
+      success("Đã tải tệp lên thành công");
+      event.target.value = "";
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Không thể tải tệp lên.");
+    } finally {
+      setUploadingFiles(false);
+    }
+  };
+
+  const handleSubmitEvidence = async () => {
+    if (!report) {
+      showError("Không tìm thấy phản ánh.");
+      return;
+    }
+    if (evidenceFiles.length === 0) {
+      showError("Vui lòng tải lên ít nhất một minh chứng.");
+      return;
+    }
+    try {
+      setSubmittingEvidence(true);
+      if (!token) {
+        showError("Phiên đăng nhập đã hết hạn.");
+        return;
+      }
+
+      const res = await fetch("/api/staff/evidence", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          reportId: report.id,
+          description: evidenceDescription,
+          files: evidenceFiles.map((file) => file.url),
+        }),
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || "Không thể gửi minh chứng.");
+      }
+
+      success("Đã gửi minh chứng thành công");
+      setUploadEvidenceModalOpen(false);
+      setEvidenceDescription("");
+      setEvidenceFiles([]);
+      await fetchReport();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Không thể gửi minh chứng.");
+    } finally {
+      setSubmittingEvidence(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -263,14 +349,24 @@ export default function StaffReportDetailPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setUpdateModalOpen(true)}
-          disabled={report.trang_thai === "da_hoan_tat"}
-          className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Edit3 className="h-4 w-4" />
-          Cập nhật trạng thái
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setUploadEvidenceModalOpen(true)}
+            disabled={report.trang_thai === "da_hoan_tat"}
+            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Camera className="h-4 w-4" />
+            Tải lên minh chứng
+          </button>
+          <button
+            onClick={() => setUpdateModalOpen(true)}
+            disabled={report.trang_thai === "da_hoan_tat"}
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Edit3 className="h-4 w-4" />
+            Cập nhật trạng thái
+          </button>
+        </div>
       </div>
 
       {/* Status Cards */}
@@ -442,13 +538,49 @@ export default function StaffReportDetailPage() {
                         </p>
                       </div>
                     </div>
-                    {xu_ly.hinh_anh_minh_chung && (
-                      <img
-                        src={xu_ly.hinh_anh_minh_chung}
-                        alt="Minh chứng"
-                        className="mt-3 w-48 rounded-lg"
-                      />
-                    )}
+                    {(() => {
+                      if (!xu_ly.hinh_anh_minh_chung) return null;
+                      
+                      // Parse evidence files (can be string or JSON array)
+                      let evidenceFiles: string[] = [];
+                      try {
+                        const parsed = JSON.parse(xu_ly.hinh_anh_minh_chung);
+                        evidenceFiles = Array.isArray(parsed) ? parsed : [xu_ly.hinh_anh_minh_chung];
+                      } catch {
+                        // If not JSON, treat as single string
+                        evidenceFiles = [xu_ly.hinh_anh_minh_chung];
+                      }
+
+                      if (evidenceFiles.length === 0) return null;
+
+                      return (
+                        <div className="mt-3">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                            Minh chứng ({evidenceFiles.length} {evidenceFiles.length === 1 ? 'file' : 'files'})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {evidenceFiles.map((fileUrl: string, idx: number) => (
+                              <a
+                                key={idx}
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="relative group"
+                              >
+                                <img
+                                  src={fileUrl}
+                                  alt={`Minh chứng ${idx + 1}`}
+                                  className="h-32 w-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-80 transition-opacity"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-lg transition-opacity flex items-center justify-center">
+                                  <ImageIcon className="h-4 w-4 text-white opacity-0 group-hover:opacity-100" />
+                                </div>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
@@ -610,6 +742,131 @@ export default function StaffReportDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Upload Evidence Modal */}
+      <Modal
+        isOpen={uploadEvidenceModalOpen}
+        onClose={() => {
+          setUploadEvidenceModalOpen(false);
+          setEvidenceDescription("");
+          setEvidenceFiles([]);
+        }}
+        className="max-w-2xl"
+      >
+        <div className="p-6">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="rounded-full bg-brand-50 p-2 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
+              <Camera className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Tải lên minh chứng
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Phản ánh #{report?.id}: {report?.tieu_de}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Mô tả hiện trạng
+              </label>
+              <textarea
+                value={evidenceDescription}
+                onChange={(e) => setEvidenceDescription(e.target.value)}
+                rows={3}
+                placeholder="Ghi chú chi tiết về hiện trạng, vật cản, mức độ nguy hiểm..."
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 p-6 text-center transition hover:border-brand-500 dark:border-gray-600">
+                <Upload className="mb-3 h-8 w-8 text-brand-500" />
+                <p className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Kéo & thả hoặc bấm để chọn tệp
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Hỗ trợ JPG, PNG, MP4 (tối đa 50MB)
+                </p>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleEvidenceFilesSelected}
+                  accept="image/*,video/*"
+                />
+                <span className="mt-3 inline-flex items-center justify-center rounded-full bg-brand-50 px-4 py-1 text-xs font-semibold text-brand-600 transition hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-200">
+                  {uploadingFiles ? "Đang tải..." : "Chọn từ máy"}
+                </span>
+              </label>
+
+              <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+                <p className="mb-3 text-sm font-medium text-gray-900 dark:text-white">
+                  Tệp đã chọn ({evidenceFiles.length})
+                </p>
+                {evidenceFiles.length === 0 ? (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Chưa có minh chứng nào được tải lên.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {evidenceFiles.map((file, index) => (
+                      <div
+                        key={`${file.url}-${index}`}
+                        className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 dark:border-gray-800"
+                      >
+                        <span className="truncate text-sm text-gray-700 dark:text-gray-200">
+                          {file.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEvidenceFiles((prev) => prev.filter((_, i) => i !== index))
+                          }
+                          className="ml-2 text-gray-400 transition hover:text-red-500"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => {
+                  setUploadEvidenceModalOpen(false);
+                  setEvidenceDescription("");
+                  setEvidenceFiles([]);
+                }}
+                disabled={submittingEvidence}
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSubmitEvidence}
+                disabled={submittingEvidence || evidenceFiles.length === 0}
+                className="flex-1 rounded-lg bg-brand-600 px-4 py-2 font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submittingEvidence ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Đang gửi...
+                  </span>
+                ) : (
+                  "Gửi minh chứng"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
 
       {/* Update Status Modal */}
       <Modal

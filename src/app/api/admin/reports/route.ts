@@ -62,6 +62,9 @@ export async function GET(req: NextRequest) {
               },
             },
           },
+          orderBy: {
+            thoi_gian: "desc",
+          },
         },
         blockchain_logs: true,
       },
